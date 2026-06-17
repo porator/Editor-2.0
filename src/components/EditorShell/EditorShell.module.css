@@ -1,0 +1,15 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-sidebar-accent);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 1px;
+}

@@ -1,0 +1,387 @@
+/* From Figma: pr-[10px] py-[10px] on the preview column */
+.workspace {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 10px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Template badge — overlaid inside the canvas, top-left corner ── */
+.templateBadge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: var(--color-indigo-500);
+  color: var(--color-white);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: 0 0 4px 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ═══ DESKTOP LAYOUT ═══ */
+.desktopFrame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Figma: white card, border, rounded-xl, shadow-sm, fills flex space */
+.desktopCanvas {
+  flex: 1;
+  min-height: 0;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-50);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.desktopCanvasInner {
+  position: absolute;
+  inset: 0;
+  transform-origin: top left;
+  /* scale is applied via inline style */
+}
+
+/* ═══ MOBILE LAYOUT ═══ */
+.mobileFrame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mobileCanvas {
+  flex: 1;
+  min-height: 0;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-50);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  /* badge is above, so only bottom of top edge gets top-left radius */
+  border-radius: 0 20px 20px 20px;
+}
+
+/* ── Mode chip ── */
+.modeChip {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(24, 24, 27, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--color-white);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: 100px;
+  pointer-events: none;
+  letter-spacing: 0.01em;
+}
+
+.modeChipScale { opacity: 0.6; }
+
+/* ── Section selection outline ── */
+.sectionBlock {
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+  transition: outline-color 80ms ease;
+}
+
+.sectionBlock:hover {
+  outline-color: rgba(59, 130, 246, 0.4);
+}
+
+.sectionBlockActive {
+  outline-color: #2563eb;
+}
+
+.sectionChip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #2563eb;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  border-radius: 0 0 4px 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════
+   White-label skeleton store preview
+   Matches Figma node 27:734
+   ══════════════════════════════════════ */
+
+/* Shared skeleton accent colors */
+:root {
+  --sk-accent: #f4f4f5;
+  --sk-border: #e4e4e7;
+}
+
+.skRoot {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: linear-gradient(180deg, #dfe0fb 0%, #eef0ed 100%);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.1) transparent;
+}
+
+/* ── Header ── */
+.skHeader {
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 8px 8px 0 0;
+  padding: 20px 16px 16px;
+}
+
+.skHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.skHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--sk-accent);
+  flex-shrink: 0;
+}
+
+.skHeaderLines {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 62px;
+}
+
+.skCartBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--sk-accent);
+  flex-shrink: 0;
+}
+
+/* ── Body ── */
+.skBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 0;
+}
+
+/* ── Shared skeleton line ── */
+.skLine {
+  height: 10px;
+  border-radius: 100px;
+  background: var(--sk-accent);
+  flex-shrink: 0;
+}
+
+/* ── Shared card button bar ── */
+.skCardBtn {
+  height: 28px;
+  background: var(--sk-border);
+  border-radius: 0 0 8px 8px;
+  flex-shrink: 0;
+}
+
+/* ── Gallery row (top section — 3 cards) ── */
+.skGalleryRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 0;
+}
+
+.skGalleryCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 6px 5px -2px rgba(0,0,0,0.1), 0 2.5px 2px -2px rgba(0,0,0,0.05);
+}
+
+.skGalleryCardSm {
+  width: 200px;
+  opacity: 0.7;
+}
+
+.skGalleryCardLg {
+  width: 260px;
+}
+
+.skGalleryBody {
+  background: #fff;
+  flex: 1;
+  padding: 8px;
+}
+
+.skProductsContainer {
+  background: var(--sk-accent);
+  border-radius: 10px;
+  padding: 8px;
+  margin-top: 20px;
+}
+
+.skProductRow {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.skProductItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.skProductImg {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.skGalleryCard .skProductImg {
+  background: #fff;
+}
+
+.skProductLabel {
+  height: 10px;
+  width: 70%;
+  border-radius: 100px;
+  background: #fff;
+}
+
+/* ── Rolling section ── */
+.skRollingSection {
+  background: rgba(228, 228, 231, 0.3);
+  border-radius: 8px;
+  margin: 0 18px;
+  padding: 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skRollingRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skChevron {
+  flex-shrink: 0;
+}
+
+/* Bundle card (single product) */
+.skBundleCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: 0 6px 5px -2px rgba(0,0,0,0.1), 0 2.5px 2px -2px rgba(0,0,0,0.05);
+}
+
+.skBundleCardSm {
+  width: 96px;
+  opacity: 0.7;
+}
+
+.skBundleCardLg {
+  width: 122px;
+}
+
+.skBundleBody {
+  background: #fff;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.skBundleImg {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--sk-accent);
+  flex-shrink: 0;
+}
+
+.skBundleLg .skBundleImg {
+  width: 50px;
+  height: 50px;
+}
+
+.skBundleLines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+/* ── Bundles grid (bottom section) ── */
+.skBundlesRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 18px;
+}
+
+/* Multi-product bundle — reuses skBundleCard sizes */
+.skBundleCard .skBundleBody {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 10px 12px;
+}

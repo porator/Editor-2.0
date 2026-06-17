@@ -1,0 +1,278 @@
+/* ─────────────────────────────────────────────────────
+   Right-dock card shell — mirrors LeftPanel card styles
+───────────────────────────────────────────────────── */
+.dockPanel {
+  display: flex;
+  flex-direction: column;
+  width: 288px;
+  flex-shrink: 0;
+  height: 100%;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-50);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  /* 10px margin to match left panel padding */
+  margin: 10px 10px 10px 0;
+}
+
+.dockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  flex-shrink: 0;
+  min-height: 44px;
+}
+
+.dockTitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.dockActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dockBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-md);
+  color: var(--color-gray-400);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.dockBtn:hover {
+  background: var(--color-muted);
+  color: var(--color-foreground);
+}
+
+/* Body scroll wrapper for the dock — same as cardBody in LeftPanel */
+.dockBody {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-200) transparent;
+}
+
+.dockBody::-webkit-scrollbar { width: 4px; }
+.dockBody::-webkit-scrollbar-thumb { background: var(--color-gray-200); border-radius: 2px; }
+
+/* ─────────────────────────────────────────────────────
+   Settings body — content shared between dock and pane
+───────────────────────────────────────────────────── */
+.body {
+  padding: 12px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Group of consecutive sliders — tighter 4px gap */
+.rangeGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionHeading {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-foreground);
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin: 4px 0;
+}
+
+/* Field group */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--color-gray-600);
+}
+
+.fieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fieldValue {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-foreground);
+  background: var(--color-muted);
+  border-radius: var(--radius-sm);
+  padding: 1px 5px;
+}
+
+/* Slider value — muted, matches Figma */
+.fieldValueMuted {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: #737373;
+}
+
+/* ── Design-system slider (Figma node 17205:202658) ── */
+:root {
+  --slider-track: #f5f5f5;
+  --slider-fill:  #171717;
+}
+
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--slider-track); /* overridden inline per-value */
+  outline: none;
+  cursor: pointer;
+}
+
+/* Thumb — webkit */
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid #171717;
+  box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.1), 0px 1px 2px -1px rgba(0,0,0,0.1);
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+/* Thumb — firefox */
+.range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid #171717;
+  box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.1), 0px 1px 2px -1px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+/* Firefox track */
+.range::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+/* Text input */
+.textInput {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  outline: none;
+  width: 100%;
+  transition: border-color 120ms ease;
+}
+.textInput:focus {
+  border-color: var(--color-indigo-400);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+/* Select */
+.selectWrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+.selectWrap:hover { border-color: var(--color-gray-300); }
+.selectValue { flex: 1; }
+.selectChevron { color: var(--color-gray-400); flex-shrink: 0; }
+
+/* Control row */
+.controlRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+}
+
+.controlLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--color-gray-600);
+}
+
+/* Toggle */
+.toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 100px;
+  background: var(--color-gray-200);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 150ms ease;
+  cursor: pointer;
+}
+.toggleOn { background: var(--color-indigo-600); }
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 150ms ease;
+}
+.toggleOn .toggleThumb { transform: translateX(16px); }
+
+/* Color swatch */
+.colorSwatch {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0,0,0,0.08);
+  flex-shrink: 0;
+  cursor: pointer;
+}

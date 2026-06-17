@@ -1,0 +1,16 @@
+import { useState } from 'react';
+import EditorShell from './components/EditorShell/EditorShell';
+import type { EditorState } from './types/editor';
+
+export default function App() {
+  const [state, setState] = useState<EditorState>({
+    activePanel: 'blocks',
+    previewMode: 'desktop',
+    desktopScale: 100,
+    templateName: 'Summer Sale Template',
+    canUndo: true,
+    canRedo: false,
+  });
+
+  return <EditorShell state={state} onStateChange={setState} />;
+}
