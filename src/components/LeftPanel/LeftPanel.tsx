@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import {
   MoreHorizontal, X, Palette, Wand2,
-  ChevronRight, ChevronDown, PlusCircle,
-  LayoutTemplate, Image, Link2, Type, MousePointer2,
-  Gift, Calendar, Ticket, Layers,
+  ChevronRight, ChevronDown,
+  LayoutTemplate, Image, Link2, MousePointer2,
+  Gift, Calendar, Ticket,
   ShoppingBag, Timer, ShieldCheck, Star, X as XIcon, AlignLeft,
 } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
+import { Button } from '../ds/atoms/Button';
+import { Plus } from 'lucide-react';
 import styles from './LeftPanel.module.css';
 
 export interface BottomOverride {
@@ -197,7 +199,14 @@ function BlocksPanel({ onSectionActivate, bottomOverride }: {
                 {isExpanded && (
                   <div className={styles.blockList}>
                     {section.blocks.map((block) => (
-                      <div key={block.id} className={styles.blockRow}>
+                      <div
+                        key={block.id}
+                        className={`${styles.blockRow} ${activeId === block.id ? styles.blockRowActive : ''}`}
+                        onClick={() => {
+                          setActiveId(block.id);
+                          onSectionActivate?.(block.id, block.label);
+                        }}
+                      >
                         <block.icon size={14} strokeWidth={1.75} className={styles.blockIcon} />
                         <span className={styles.blockLabel}>{block.label}</span>
                         {block.subtitle && (
@@ -212,10 +221,11 @@ function BlocksPanel({ onSectionActivate, bottomOverride }: {
           })}
 
           {group.id === 'template-group' && (
-            <button className={styles.addBlockBtn} style={{ margin: '8px 16px 4px' }}>
-              <PlusCircle size={14} strokeWidth={2} />
-              <span>Add block</span>
-            </button>
+            <div style={{ margin: '8px 16px 4px' }}>
+              <Button variant="outline" size="sm" className="w-full" leadingIcon={<Plus size={14} />}>
+                Add block
+              </Button>
+            </div>
           )}
         </div>
       ))}
@@ -279,13 +289,6 @@ function BrandKitPanel() {
     </ul>
   );
 
-  const bottomContent = (
-    <div className={styles.emptyState}>
-      <Palette size={22} strokeWidth={1.5} className={styles.emptyIcon} />
-      <p className={styles.emptyText}>Brand colors &amp; fonts</p>
-    </div>
-  );
-
   return (
     <div className={styles.blocksPanelRoot}>
       <div className={styles.card}>
@@ -303,13 +306,6 @@ function PersonalizationPanel() {
       <Wand2 size={22} strokeWidth={1.5} className={styles.emptyIcon} />
       <p className={styles.emptyText}>No personalization rules</p>
       <button className={styles.emptyActionBtn}>Add rule</button>
-    </div>
-  );
-
-  const bottomContent = (
-    <div className={styles.emptyState}>
-      <Layers size={22} strokeWidth={1.5} className={styles.emptyIcon} />
-      <p className={styles.emptyText}>No conditions set</p>
     </div>
   );
 

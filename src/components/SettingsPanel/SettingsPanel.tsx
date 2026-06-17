@@ -1,28 +1,39 @@
 import { useState } from 'react';
-import { MoreHorizontal, X, ChevronDown } from 'lucide-react';
+import { MoreHorizontal, X } from 'lucide-react';
+import { Switch } from '../ds/atoms/Switch';
+import { Input } from '../ds/atoms/Input';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ds/composites/Dropdown';
+import { ChevronDown } from 'lucide-react';
 import styles from './SettingsPanel.module.css';
 
 /* ── Sub-controls ── */
 
 function Toggle({ label, defaultOn = false }: { label: string; defaultOn?: boolean }) {
+  const [on, setOn] = useState(defaultOn);
   return (
     <div className={styles.controlRow}>
       <span className={styles.controlLabel}>{label}</span>
-      <button className={`${styles.toggle} ${defaultOn ? styles.toggleOn : ''}`} role="switch" aria-checked={defaultOn}>
-        <span className={styles.toggleThumb} />
-      </button>
+      <Switch checked={on} onCheckedChange={setOn} />
     </div>
   );
 }
 
-function SelectField({ label, value }: { label: string; value: string }) {
+function SelectField({ label, value: initial }: { label: string; value: string }) {
+  const [value] = useState(initial);
   return (
     <div className={styles.fieldGroup}>
       <label className={styles.fieldLabel}>{label}</label>
-      <div className={styles.selectWrap}>
-        <span className={styles.selectValue}>{value}</span>
-        <ChevronDown size={14} strokeWidth={1.75} className={styles.selectChevron} />
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className={styles.selectWrap}>
+            <span className={styles.selectValue}>{value}</span>
+            <ChevronDown size={14} strokeWidth={1.75} className={styles.selectChevron} />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-[240px]">
+          <DropdownMenuItem>{value}</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
@@ -56,7 +67,7 @@ function TextField({ label, value }: { label: string; value: string }) {
   return (
     <div className={styles.fieldGroup}>
       <label className={styles.fieldLabel}>{label}</label>
-      <input type="text" className={styles.textInput} defaultValue={value} />
+      <Input defaultValue={value} />
     </div>
   );
 }

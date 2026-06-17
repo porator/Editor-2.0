@@ -8,7 +8,8 @@ import {
   Laptop,
   Smartphone,
 } from 'lucide-react';
-import type { EditorState, ActivePanel, PreviewMode } from '../../types/editor';
+import type { EditorState, ActivePanel } from '../../types/editor';
+import { Button } from '../ds/atoms/Button';
 import styles from './TopNavigation.module.css';
 
 interface Props {
@@ -100,9 +101,7 @@ export default function TopNavigation({ state, onStateChange }: Props) {
         </button>
 
         {/* Save */}
-        <button className={styles.saveBtn} aria-label="Save template">
-          Save
-        </button>
+        <Button size="sm" aria-label="Save template">Save</Button>
       </div>
     </header>
   );

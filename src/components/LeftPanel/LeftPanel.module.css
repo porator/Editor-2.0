@@ -210,6 +210,16 @@
 
 .blockRow:hover { background: var(--color-muted); }
 
+.blockRowActive {
+  background: var(--color-indigo-50);
+  color: var(--color-indigo-700);
+}
+
+.blockRowActive .blockIcon,
+.blockRowActive .blockLabel {
+  color: var(--color-indigo-700);
+}
+
 .blockIcon {
   flex-shrink: 0;
   color: var(--color-gray-400);

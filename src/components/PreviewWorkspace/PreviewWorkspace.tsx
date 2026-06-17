@@ -1,4 +1,5 @@
 import { PanelTop } from 'lucide-react';
+import { Badge } from '../ds/atoms/Badge';
 import type { EditorState } from '../../types/editor';
 import styles from './PreviewWorkspace.module.css';
 
@@ -180,10 +181,10 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
             className={styles.mobileCanvas}
             style={{ width: MOBILE_CANVAS_WIDTH }}
           >
-            <div className={styles.templateBadge}>
+            <Badge className={`${styles.templateBadge} gap-1.5`}>
               <PanelTop size={12} strokeWidth={2} />
-              <span>{activeSection ?? state.templateName}</span>
-            </div>
+              {activeSection ?? state.templateName}
+            </Badge>
             <StorePreview mode="mobile" activeSection={activeSection} onSectionClick={onSectionClick} />
           </div>
         </div>
@@ -191,10 +192,10 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
         /* Desktop: canvas fills the full workspace area */
         <div className={styles.desktopFrame}>
           <div className={styles.desktopCanvas}>
-            <div className={styles.templateBadge}>
+            <Badge className={`${styles.templateBadge} gap-1.5`}>
               <PanelTop size={12} strokeWidth={2} />
-              <span>{activeSection ?? state.templateName}</span>
-            </div>
+              {activeSection ?? state.templateName}
+            </Badge>
             <div
               className={styles.desktopCanvasInner}
               style={{ transform: `scale(${(state.desktopScale ?? 100) / 100})` }}
