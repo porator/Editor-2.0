@@ -118,8 +118,8 @@ function renderControl(control: Control) {
 
 /* ── Category accordion row ── */
 
-function CategoryGroup({ category }: { category: Category }) {
-  const [open, setOpen] = useState(true);
+function CategoryGroup({ category, defaultOpen = false }: { category: Category; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className={styles.group}>
       <button className={styles.groupHeader} onClick={() => setOpen((v) => !v)}>
@@ -183,7 +183,7 @@ export default function ConfigDrawer({ sectionId, onBack }: Props) {
       {/* Body */}
       <div className={styles.body}>
         {config.categories.map((cat) => (
-          <CategoryGroup key={cat.id} category={cat} />
+          <CategoryGroup key={cat.id} category={cat} defaultOpen={true} />
         ))}
       </div>
     </div>

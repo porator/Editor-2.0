@@ -151,7 +151,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride }: {
 }) {
   const [activeId, setActiveId] = useState('header');
   // tracks which sections are expanded; default: expand 'header'
-  const [expanded, setExpanded] = useState<Set<string>>(new Set(['header', 'banner']));
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggle = (id: string) =>
     setExpanded((prev) => {
@@ -186,6 +186,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride }: {
                     className={styles.chevronBtn}
                     onClick={(e) => { e.stopPropagation(); toggle(section.id); }}
                     aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                    style={{ visibility: hasBlocks ? 'visible' : 'hidden' }}
                   >
                     {isExpanded
                       ? <ChevronDown size={13} strokeWidth={2.5} />

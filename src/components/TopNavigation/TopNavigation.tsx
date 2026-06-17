@@ -5,9 +5,11 @@ import {
   CodeXml,
   Undo2,
   Redo2,
-  Laptop,
+  Monitor,
+  Tablet,
   Smartphone,
 } from 'lucide-react';
+import type { PreviewMode } from '../../types/editor';
 import type { EditorState, ActivePanel } from '../../types/editor';
 import { Button } from '../ds/atoms/Button';
 import styles from './TopNavigation.module.css';
@@ -26,10 +28,15 @@ const NAV_TABS: { id: ActivePanel; icon: React.ElementType; label: string }[] = 
 export default function TopNavigation({ state, onStateChange }: Props) {
   const set = (patch: Partial<EditorState>) => onStateChange({ ...state, ...patch });
 
-  const togglePreview = () =>
-    set({ previewMode: state.previewMode === 'desktop' ? 'mobile' : 'desktop' });
-
-  const PreviewIcon = state.previewMode === 'mobile' ? Smartphone : Laptop;
+  const CYCLE: { mode: PreviewMode; icon: React.ElementType; label: string }[] = [
+    { mode: 'desktop', icon: Monitor,    label: 'Desktop' },
+    { mode: 'tablet',  icon: Tablet,     label: 'Tablet' },
+    { mode: 'mobile',  icon: Smartphone, label: 'Mobile' },
+  ];
+  const currentIndex = CYCLE.findIndex((c) => c.mode === state.previewMode);
+  const current = CYCLE[currentIndex];
+  const next = CYCLE[(currentIndex + 1) % CYCLE.length];
+  const CycleIcon = current.icon;
 
   return (
     <header className={styles.topBar}>
@@ -90,14 +97,14 @@ export default function TopNavigation({ state, onStateChange }: Props) {
           </button>
         </div>
 
-        {/* Single preview toggle — Laptop (desktop) or Smartphone (mobile) */}
+        {/* Device preview selector — cycles Desktop → Tablet → Mobile */}
         <button
-          className={styles.iconBtn}
-          title={state.previewMode === 'desktop' ? 'Switch to mobile' : 'Switch to desktop'}
-          aria-label={state.previewMode === 'desktop' ? 'Switch to mobile preview' : 'Switch to desktop preview'}
-          onClick={togglePreview}
+          className={`${styles.iconBtn} ${styles.iconBtnActive}`}
+          title={`Switch to ${next.label}`}
+          aria-label={`Current: ${current.label}. Click to switch to ${next.label}`}
+          onClick={() => set({ previewMode: next.mode })}
         >
-          <PreviewIcon size={16} strokeWidth={1.75} />
+          <CycleIcon size={16} strokeWidth={1.75} />
         </button>
 
         {/* Save */}

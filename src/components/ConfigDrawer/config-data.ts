@@ -341,6 +341,205 @@ const SECTION_CONFIGS: Record<string, SectionConfig> = {
     ],
   },
 
+  banner: {
+    label: 'Banner',
+    categories: [
+      {
+        id: 'asset',
+        label: 'Asset',
+        controls: [
+          { id: 'banner-img-mobile',  label: 'Banner image — mobile',  type: 'upload' },
+          { id: 'banner-img-desktop', label: 'Banner image — desktop', type: 'upload' },
+          { id: 'banner-link',        label: 'Link URL',               type: 'text',   defaultValue: '' },
+        ],
+      },
+      {
+        id: 'layout-structure',
+        label: 'Layout & Structure',
+        controls: [
+          { id: 'banner-height',  label: 'Height',        type: 'range',  defaultValue: 200, min: 80,  max: 480 },
+          { id: 'border-radius',  label: 'Border radius', type: 'range',  defaultValue: 12,  min: 0,   max: 32 },
+          { id: 'object-fit',     label: 'Object fit',    type: 'select', options: ['Cover', 'Contain', 'Fill'], defaultValue: 'Cover' },
+        ],
+      },
+      {
+        id: 'shadow-effects',
+        label: 'Shadow & Effects',
+        controls: [
+          { id: 'box-shadow', label: 'Box shadow', type: 'toggle', defaultValue: false },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'show-banner', label: 'Show banner', type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+
+  'rolling-offer': {
+    label: 'Rolling Offer',
+    categories: [
+      {
+        id: 'color-fill',
+        label: 'Color & Fill',
+        controls: [
+          { id: 'card-bg',       label: 'Background color', type: 'color',  defaultValue: '#ffffff' },
+          { id: 'card-gradient', label: 'Gradient',         type: 'color',  defaultValue: '#f5f3ff' },
+          { id: 'card-bg-img',   label: 'Background image', type: 'upload' },
+        ],
+      },
+      {
+        id: 'grid-layout',
+        label: 'Grid & Layout',
+        controls: [
+          { id: 'cards-per-row', label: 'Cards per row',  type: 'range',  defaultValue: 4, min: 2, max: 6 },
+          { id: 'scroll-type',   label: 'Scroll type',    type: 'select', options: ['Horizontal scroll', 'Paginated', 'Static grid'], defaultValue: 'Horizontal scroll' },
+        ],
+      },
+      {
+        id: 'layout-structure',
+        label: 'Layout & Structure',
+        controls: [
+          { id: 'border-radius', label: 'Card border radius', type: 'range', defaultValue: 12, min: 0, max: 32 },
+        ],
+      },
+      {
+        id: 'spacing',
+        label: 'Spacing & Dimensions',
+        controls: [
+          { id: 'card-width',  label: 'Width',   type: 'range', defaultValue: 180, min: 120, max: 360 },
+          { id: 'card-height', label: 'Height',  type: 'range', defaultValue: 260, min: 160, max: 480 },
+          { id: 'padding',     label: 'Padding', type: 'range', defaultValue: 12,  min: 0,   max: 40 },
+          { id: 'gap',         label: 'Gap',     type: 'range', defaultValue: 8,   min: 0,   max: 32 },
+        ],
+      },
+      {
+        id: 'shadow-effects',
+        label: 'Shadow & Effects',
+        controls: [
+          { id: 'box-shadow', label: 'Box shadow', type: 'toggle', defaultValue: true },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'vis-title',          label: 'Show title',          type: 'toggle', defaultValue: true },
+          { id: 'vis-quantity',       label: 'Show quantity',       type: 'toggle', defaultValue: true },
+          { id: 'vis-sale-label',     label: 'Show sale label',     type: 'toggle', defaultValue: true },
+          { id: 'vis-original-price', label: 'Show original price', type: 'toggle', defaultValue: true },
+          { id: 'vis-badge',          label: 'Show badge',          type: 'toggle', defaultValue: true },
+          { id: 'vis-timer',          label: 'Show timer',          type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+
+  'reward-calendar': {
+    label: 'Reward Calendar',
+    categories: [
+      {
+        id: 'color-fill',
+        label: 'Color & Fill',
+        controls: [
+          { id: 'card-bg',    label: 'Background color',          type: 'color',  defaultValue: '#ffffff' },
+          { id: 'day-bg',     label: 'Day cell background',       type: 'color',  defaultValue: '#f9fafb' },
+          { id: 'claimed-bg', label: 'Claimed day background',    type: 'color',  defaultValue: '#22c55e' },
+          { id: 'today-bg',   label: 'Today highlight',           type: 'color',  defaultValue: '#4f46e5' },
+        ],
+      },
+      {
+        id: 'layout-structure',
+        label: 'Layout & Structure',
+        controls: [
+          { id: 'calendar-columns', label: 'Columns',          type: 'range',  defaultValue: 7, min: 5, max: 7 },
+          { id: 'border-radius',    label: 'Cell border radius',type: 'range',  defaultValue: 8, min: 0, max: 20 },
+          { id: 'cell-size',        label: 'Cell size',         type: 'range',  defaultValue: 56, min: 40, max: 96 },
+        ],
+      },
+      {
+        id: 'typography',
+        label: 'Typography',
+        controls: [
+          { id: 'day-font-size',    label: 'Day number size',   type: 'range',  defaultValue: 13, min: 10, max: 20 },
+          { id: 'reward-font-size', label: 'Reward label size', type: 'range',  defaultValue: 11, min: 8,  max: 16 },
+          { id: 'text-color',       label: 'Text color',        type: 'color',  defaultValue: '#18181b' },
+        ],
+      },
+      {
+        id: 'spacing',
+        label: 'Spacing & Dimensions',
+        controls: [
+          { id: 'padding', label: 'Padding', type: 'range', defaultValue: 16, min: 0, max: 48 },
+          { id: 'gap',     label: 'Gap',     type: 'range', defaultValue: 6,  min: 0, max: 20 },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'vis-header',      label: 'Show header',        type: 'toggle', defaultValue: true },
+          { id: 'vis-day-numbers', label: 'Show day numbers',   type: 'toggle', defaultValue: true },
+          { id: 'vis-reward-icon', label: 'Show reward icon',   type: 'toggle', defaultValue: true },
+          { id: 'vis-reward-qty',  label: 'Show reward qty',    type: 'toggle', defaultValue: true },
+          { id: 'vis-claim-btn',   label: 'Show claim button',  type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+
+  'daily-bonus': {
+    label: 'Daily Bonus',
+    categories: [
+      {
+        id: 'color-fill',
+        label: 'Color & Fill',
+        controls: [
+          { id: 'card-bg',       label: 'Background color', type: 'color',  defaultValue: '#ffffff' },
+          { id: 'card-gradient', label: 'Gradient',         type: 'color',  defaultValue: '#fef3c7' },
+          { id: 'card-bg-img',   label: 'Background image', type: 'upload' },
+        ],
+      },
+      {
+        id: 'layout-structure',
+        label: 'Layout & Structure',
+        controls: [
+          { id: 'border-radius', label: 'Border radius', type: 'range', defaultValue: 16, min: 0, max: 40 },
+          { id: 'card-width',    label: 'Width',         type: 'range', defaultValue: 320, min: 240, max: 560 },
+        ],
+      },
+      {
+        id: 'spacing',
+        label: 'Spacing & Dimensions',
+        controls: [
+          { id: 'padding', label: 'Padding', type: 'range', defaultValue: 24, min: 8, max: 48 },
+          { id: 'gap',     label: 'Gap',     type: 'range', defaultValue: 16, min: 0, max: 32 },
+        ],
+      },
+      {
+        id: 'shadow-effects',
+        label: 'Shadow & Effects',
+        controls: [
+          { id: 'box-shadow', label: 'Box shadow', type: 'toggle', defaultValue: true },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'vis-title',       label: 'Show title',       type: 'toggle', defaultValue: true },
+          { id: 'vis-subtitle',    label: 'Show subtitle',    type: 'toggle', defaultValue: true },
+          { id: 'vis-reward-icon', label: 'Show reward icon', type: 'toggle', defaultValue: true },
+          { id: 'vis-timer',       label: 'Show timer',       type: 'toggle', defaultValue: true },
+          { id: 'vis-claim-btn',   label: 'Show claim button',type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+
   'player-level': {
     label: 'Player Level',
     categories: [
@@ -674,6 +873,247 @@ export const SUB_BLOCK_CONFIGS: Record<string, SectionConfig> = {
     parentLabel: 'Popup',
     categories: buttonCats,
   },
+  /* ── Rolling Offer elements ── */
+  'rolling-offers': {
+    label: 'Offers',
+    parentLabel: 'Rolling Offer',
+    categories: productsCats('rolling'),
+  },
+  'rolling-timer': {
+    label: 'Timer',
+    parentLabel: 'Rolling Offer',
+    categories: timerCats,
+  },
+  'rolling-button': {
+    label: 'Button',
+    parentLabel: 'Rolling Offer',
+    categories: buttonCats,
+  },
+
+  /* ── Reward Calendar elements ── */
+  'reward-rewards': {
+    label: 'Rewards',
+    parentLabel: 'Reward Calendar',
+    categories: [
+      {
+        id: 'product-image',
+        label: 'Reward Image',
+        controls: [
+          { id: 'img-width',  label: 'Width',         type: 'range',  defaultValue: 48, min: 24, max: 96 },
+          { id: 'img-height', label: 'Height',        type: 'range',  defaultValue: 48, min: 24, max: 96 },
+          { id: 'img-fit',    label: 'Object fit',    type: 'select', options: ['Cover', 'Contain', 'Fill'], defaultValue: 'Contain' },
+        ],
+      },
+      {
+        id: 'typography',
+        label: 'Typography',
+        controls: [
+          { id: 'qty-size',  label: 'Quantity — font size', type: 'range', defaultValue: 11, min: 8, max: 18 },
+          { id: 'qty-color', label: 'Quantity — color',     type: 'color', defaultValue: '#18181b' },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'vis-qty',  label: 'Show quantity',     type: 'toggle', defaultValue: true },
+          { id: 'vis-icon', label: 'Show reward icon',  type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+  'reward-settings': {
+    label: 'Calendar Settings',
+    parentLabel: 'Reward Calendar',
+    categories: [
+      {
+        id: 'layout-structure',
+        label: 'Layout & Structure',
+        controls: [
+          { id: 'start-day',  label: 'Start day of week',  type: 'select', options: ['Sunday', 'Monday'], defaultValue: 'Sunday' },
+          { id: 'cycle-mode', label: 'Cycle mode',         type: 'select', options: ['Monthly', '30 days rolling', 'Weekly'], defaultValue: 'Monthly' },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'vis-claimed-indicator', label: 'Show claimed indicator', type: 'toggle', defaultValue: true },
+          { id: 'vis-locked-days',       label: 'Show locked days',       type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+
+  /* ── Daily Bonus elements ── */
+  'bonus-content': {
+    label: 'Content',
+    parentLabel: 'Daily Bonus',
+    categories: [
+      {
+        id: 'typography',
+        label: 'Typography',
+        controls: [
+          { id: 'title-size',    label: 'Title font size',    type: 'range',  defaultValue: 20, min: 14, max: 36 },
+          { id: 'title-weight',  label: 'Title font weight',  type: 'select', options: ['400', '500', '600', '700'], defaultValue: '700' },
+          { id: 'title-color',   label: 'Title color',        type: 'color',  defaultValue: '#18181b' },
+          { id: 'sub-size',      label: 'Subtitle font size', type: 'range',  defaultValue: 14, min: 10, max: 24 },
+          { id: 'sub-color',     label: 'Subtitle color',     type: 'color',  defaultValue: '#6b7280' },
+        ],
+      },
+      {
+        id: 'product-image',
+        label: 'Reward Image',
+        controls: [
+          { id: 'img-width',  label: 'Width',      type: 'range',  defaultValue: 80, min: 40, max: 160 },
+          { id: 'img-height', label: 'Height',     type: 'range',  defaultValue: 80, min: 40, max: 160 },
+          { id: 'img-fit',    label: 'Object fit', type: 'select', options: ['Cover', 'Contain', 'Fill'], defaultValue: 'Contain' },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'vis-title',       label: 'Show title',        type: 'toggle', defaultValue: true },
+          { id: 'vis-subtitle',    label: 'Show subtitle',     type: 'toggle', defaultValue: true },
+          { id: 'vis-reward-icon', label: 'Show reward icon',  type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+  'bonus-timer': {
+    label: 'Timer',
+    parentLabel: 'Daily Bonus',
+    categories: timerCats,
+  },
+  'bonus-button': {
+    label: 'Button',
+    parentLabel: 'Daily Bonus',
+    categories: buttonCats,
+  },
+
+  /* ── Footer elements ── */
+  'footer-logo': {
+    label: 'Logo',
+    parentLabel: 'Footer',
+    categories: [
+      {
+        id: 'asset',
+        label: 'Asset',
+        controls: [
+          { id: 'logo-upload', label: 'Logo image', type: 'upload' },
+          { id: 'logo-link',   label: 'Link URL',   type: 'text',   defaultValue: '' },
+        ],
+      },
+      {
+        id: 'spacing',
+        label: 'Spacing',
+        controls: [
+          { id: 'logo-width',  label: 'Width',  type: 'range', defaultValue: 120, min: 40, max: 320 },
+          { id: 'logo-height', label: 'Height', type: 'range', defaultValue: 40,  min: 20, max: 120 },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'show-logo', label: 'Show logo', type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+  'footer-nav': {
+    label: 'Nav links',
+    parentLabel: 'Footer',
+    categories: [
+      {
+        id: 'typography',
+        label: 'Typography',
+        controls: [
+          { id: 'nav-font-size',   label: 'Font size',   type: 'range',  defaultValue: 13, min: 10, max: 20 },
+          { id: 'nav-font-weight', label: 'Font weight', type: 'select', options: ['400', '500', '600'], defaultValue: '400' },
+          { id: 'nav-color',       label: 'Link color',  type: 'color',  defaultValue: '#6b7280' },
+          { id: 'nav-hover-color', label: 'Hover color', type: 'color',  defaultValue: '#18181b' },
+        ],
+      },
+      {
+        id: 'spacing',
+        label: 'Spacing',
+        controls: [
+          { id: 'nav-gap', label: 'Gap between links', type: 'range', defaultValue: 16, min: 4, max: 48 },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'show-nav', label: 'Show nav links', type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+
+  /* ── Header elements ── */
+  'logo': {
+    label: 'Logo',
+    parentLabel: 'Header',
+    categories: [
+      {
+        id: 'asset',
+        label: 'Asset',
+        controls: [
+          { id: 'logo-upload',  label: 'Logo image',        type: 'upload' },
+          { id: 'logo-alt',     label: 'Alt text',          type: 'text',   defaultValue: 'Store logo' },
+        ],
+      },
+      {
+        id: 'spacing',
+        label: 'Spacing',
+        controls: [
+          { id: 'logo-width',  label: 'Width',  type: 'range', defaultValue: 100, min: 40, max: 280 },
+          { id: 'logo-height', label: 'Height', type: 'range', defaultValue: 36,  min: 16, max: 96 },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'show-logo', label: 'Show logo', type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+  'main-menu': {
+    label: 'Menu',
+    parentLabel: 'Header',
+    categories: [
+      {
+        id: 'typography',
+        label: 'Typography',
+        controls: [
+          { id: 'menu-font-size',   label: 'Font size',   type: 'range',  defaultValue: 14, min: 10, max: 20 },
+          { id: 'menu-font-weight', label: 'Font weight', type: 'select', options: ['400', '500', '600'], defaultValue: '500' },
+          { id: 'menu-color',       label: 'Link color',  type: 'color',  defaultValue: '#18181b' },
+          { id: 'menu-active-color',label: 'Active color',type: 'color',  defaultValue: '#4f46e5' },
+        ],
+      },
+      {
+        id: 'spacing',
+        label: 'Spacing',
+        controls: [
+          { id: 'menu-gap', label: 'Gap between items', type: 'range', defaultValue: 24, min: 8, max: 64 },
+        ],
+      },
+      {
+        id: 'visibility',
+        label: 'Visibility',
+        controls: [
+          { id: 'show-menu', label: 'Show menu', type: 'toggle', defaultValue: true },
+        ],
+      },
+    ],
+  },
+
   'popup-close': {
     label: 'Close Button',
     parentLabel: 'Popup',

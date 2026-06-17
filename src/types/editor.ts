@@ -1,5 +1,5 @@
 export type ActivePanel = 'blocks' | 'brandKit' | 'personalization';
-export type PreviewMode = 'mobile' | 'desktop';
+export type PreviewMode = 'mobile' | 'tablet' | 'desktop';
 
 export interface EditorState {
   activePanel: ActivePanel;

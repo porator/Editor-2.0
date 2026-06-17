@@ -1,7 +1,9 @@
-import { PanelTop } from 'lucide-react';
-import { Badge } from '../ds/atoms/Badge';
+import { useEffect, useRef, useState } from 'react';
 import type { EditorState } from '../../types/editor';
 import styles from './PreviewWorkspace.module.css';
+
+const IMG_W = 1600;
+const IMG_H = 1132;
 
 interface Props {
   state: EditorState;
@@ -10,205 +12,144 @@ interface Props {
   onSectionClick?: (name: string) => void;
 }
 
-const MOBILE_CANVAS_WIDTH = 390;
-
-/* Skeleton gallery card — used in the top carousel */
-function SkeletonGalleryCard({ size }: { size: 'sm' | 'lg' }) {
-  const count = 4;
-  return (
-    <div className={`${styles.skGalleryCard} ${size === 'lg' ? styles.skGalleryCardLg : styles.skGalleryCardSm}`}>
-      <div className={styles.skGalleryBody}>
-        <div className={styles.skProductsContainer}>
-          <div className={styles.skProductRow}>
-            {Array.from({ length: count }).map((_, i) => (
-              <div key={i} className={styles.skProductItem}>
-                <div className={styles.skProductImg} />
-                <div className={styles.skProductLabel} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className={styles.skCardBtn} />
-    </div>
-  );
-}
-
-/* Skeleton bundle card — single product with text lines, used in the rolling row */
-function SkeletonBundleCard({ size }: { size: 'sm' | 'lg' }) {
-  return (
-    <div className={`${styles.skBundleCard} ${size === 'lg' ? styles.skBundleCardLg : styles.skBundleCardSm}`}>
-      <div className={styles.skBundleBody}>
-        <div className={styles.skBundleImg} />
-        <div className={styles.skBundleLines}>
-          <div className={styles.skLine} style={{ width: '100%' }} />
-          <div className={styles.skLine} style={{ width: '65%' }} />
-        </div>
-      </div>
-      <div className={styles.skCardBtn} />
-    </div>
-  );
-}
-
-/* Skeleton multi-product bundle card — 4 products in a row */
-function SkeletonMultiCard({ size }: { size: 'sm' | 'lg' }) {
-  const count = 4;
-  return (
-    <div className={`${styles.skBundleCard} ${size === 'lg' ? styles.skBundleCardLg : styles.skBundleCardSm}`}>
-      <div className={styles.skBundleBody}>
-        <div className={styles.skProductRow}>
-          {Array.from({ length: count }).map((_, i) => (
-            <div key={i} className={styles.skProductItem}>
-              <div className={styles.skBundleImg} />
-              <div className={styles.skProductLabel} style={{ width: i === 0 ? '100%' : '60%' }} />
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className={styles.skCardBtn} />
-    </div>
-  );
-}
-
-/* Chevron SVG for the rolling row */
-function ChevronRight() {
-  return (
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.skChevron}>
-      <path d="M3.5 2L6.5 5L3.5 8" stroke="#d4d4d8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-/* Clickable section wrapper with selection outline + label chip */
-function SectionBlock({
-  name,
-  activeSection,
-  onSectionClick,
-  children,
-  className,
+/* Clickable section overlay — transparent hit-target on top of the image */
+function SectionOverlay({
+  name, activeSection, onSectionClick,
+  top, height,
 }: {
   name: string;
   activeSection?: string;
   onSectionClick?: (name: string) => void;
-  children: React.ReactNode;
-  className?: string;
+  top: string;
+  height: string;
 }) {
   const isActive = activeSection === name;
   return (
     <div
-      className={`${className ?? ''} ${styles.sectionBlock} ${isActive ? styles.sectionBlockActive : ''}`}
+      className={`${styles.sectionOverlay} ${isActive ? styles.sectionOverlayActive : ''}`}
+      style={{ top, height }}
       onClick={() => onSectionClick?.(name)}
     >
       {isActive && <span className={styles.sectionChip}>{name}</span>}
-      {children}
     </div>
   );
 }
 
-/* White-label skeleton store preview */
-function StorePreview({
-  mode: _,
-  activeSection,
-  onSectionClick,
-}: {
-  mode: 'mobile' | 'desktop';
+/* Desktop preview — scales to fill canvas width proportionally */
+function GameStoreDesktop({ activeSection, onSectionClick, scale }: {
   activeSection?: string;
   onSectionClick?: (name: string) => void;
+  scale: number;
 }) {
   return (
-    <div className={styles.skRoot}>
-      {/* Header */}
-      <SectionBlock name="Header" activeSection={activeSection} onSectionClick={onSectionClick} className={styles.skHeader}>
-        <div className={styles.skHeaderInner}>
-          <div className={styles.skHeaderLeft}>
-            <div className={styles.skAvatar} />
-            <div className={styles.skHeaderLines}>
-              <div className={styles.skLine} style={{ width: '100%' }} />
-              <div className={styles.skLine} style={{ width: '60%' }} />
-            </div>
-          </div>
-          <div className={styles.skCartBtn} />
-        </div>
-      </SectionBlock>
-
-      {/* Body */}
-      <div className={styles.skBody}>
-        {/* Gallery section — 3 cards, center one larger */}
-        <SectionBlock name="Promotion" activeSection={activeSection} onSectionClick={onSectionClick} className={styles.skGalleryRow}>
-          <SkeletonGalleryCard size="sm" />
-          <SkeletonGalleryCard size="lg" />
-          <SkeletonGalleryCard size="sm" />
-        </SectionBlock>
-
-        {/* Rolling bundles carousel */}
-        <SectionBlock name="Rolling bundles" activeSection={activeSection} onSectionClick={onSectionClick} className={styles.skRollingSection}>
-          <div className={styles.skRollingRow}>
-            <SkeletonBundleCard size="lg" />
-            <ChevronRight />
-            <SkeletonBundleCard size="sm" />
-            <ChevronRight />
-            <SkeletonBundleCard size="sm" />
-            <ChevronRight />
-            <SkeletonBundleCard size="sm" />
-            <ChevronRight />
-            <SkeletonBundleCard size="sm" />
-            <ChevronRight />
-            <SkeletonBundleCard size="sm" />
-          </div>
-        </SectionBlock>
-
-        {/* Multi-product bundles row */}
-        <SectionBlock name="Bundles" activeSection={activeSection} onSectionClick={onSectionClick} className={styles.skBundlesRow}>
-          <SkeletonMultiCard size="sm" />
-          <SkeletonMultiCard size="lg" />
-          <SkeletonMultiCard size="sm" />
-        </SectionBlock>
+    /* Spacer preserves the correct layout height after transform */
+    <div style={{ height: IMG_H * scale, position: 'relative' }}>
+      <div
+        className={styles.gameImageRoot}
+        style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: IMG_W }}
+      >
+        <img
+          src="/preview-desktop.png"
+          alt="Store preview — desktop"
+          className={styles.gameImage}
+          draggable={false}
+        />
+        {/* Section overlays — percentages of natural image height */}
+        <SectionOverlay name="Header"          top="0%"   height="5.5%"  activeSection={activeSection} onSectionClick={onSectionClick} />
+        <SectionOverlay name="Promotion"       top="15%"  height="30%"   activeSection={activeSection} onSectionClick={onSectionClick} />
+        <SectionOverlay name="Bundle"          top="45%"  height="18%"   activeSection={activeSection} onSectionClick={onSectionClick} />
+        <SectionOverlay name="Rolling bundles" top="63%"  height="24%"   activeSection={activeSection} onSectionClick={onSectionClick} />
       </div>
     </div>
   );
 }
 
+/* Mobile preview — Figma screenshot with section overlays */
+function GameStoreMobile({ activeSection, onSectionClick }: {
+  activeSection?: string;
+  onSectionClick?: (name: string) => void;
+}) {
+  return (
+    <div className={styles.gameImageRootMobile}>
+      <img
+        src="/preview-mobile.png"
+        alt="Store preview — mobile"
+        className={styles.gameImage}
+        draggable={false}
+      />
+      {/* Section overlays — percentages relative to image height (1200px) */}
+      <SectionOverlay name="Header"          top="0%"   height="8.5%"  activeSection={activeSection} onSectionClick={onSectionClick} />
+      <SectionOverlay name="Promotion"       top="15%"  height="32%"   activeSection={activeSection} onSectionClick={onSectionClick} />
+      <SectionOverlay name="Bundle"          top="47%"  height="30%"   activeSection={activeSection} onSectionClick={onSectionClick} />
+      <SectionOverlay name="Rolling bundles" top="77%"  height="20%"   activeSection={activeSection} onSectionClick={onSectionClick} />
+    </div>
+  );
+}
+
+/* Tablet preview — desktop image scaled inside a 768px frame */
+function GameStoreTablet({ activeSection, onSectionClick }: {
+  activeSection?: string;
+  onSectionClick?: (name: string) => void;
+}) {
+  const scale = 768 / IMG_W;
+  return (
+    <div style={{ height: IMG_H * scale, position: 'relative' }}>
+      <div
+        className={styles.gameImageRoot}
+        style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: IMG_W }}
+      >
+        <img src="/preview-desktop.png" alt="Store preview — tablet" className={styles.gameImage} draggable={false} />
+        <SectionOverlay name="Header"          top="0%"  height="5.5%" activeSection={activeSection} onSectionClick={onSectionClick} />
+        <SectionOverlay name="Promotion"       top="15%" height="30%"  activeSection={activeSection} onSectionClick={onSectionClick} />
+        <SectionOverlay name="Bundle"          top="45%" height="18%"  activeSection={activeSection} onSectionClick={onSectionClick} />
+        <SectionOverlay name="Rolling bundles" top="63%" height="24%"  activeSection={activeSection} onSectionClick={onSectionClick} />
+      </div>
+    </div>
+  );
+}
+
+/* PreviewWorkspace shell */
 export default function PreviewWorkspace({ state, activeSection, onSectionClick }: Props) {
-  const isMobile = state.previewMode === 'mobile';
+  const { previewMode } = state;
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(([entry]) => {
+      setScale(entry.contentRect.width / IMG_W);
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   return (
-    /* From Figma: pr-[10px] py-[10px] — no left padding, panel handles its own right edge */
     <div className={styles.workspace}>
-      {isMobile ? (
-        /* Mobile: centered narrow canvas inside the workspace */
+      {previewMode === 'mobile' ? (
         <div className={styles.mobileFrame}>
-          <div
-            className={styles.mobileCanvas}
-            style={{ width: MOBILE_CANVAS_WIDTH }}
-          >
-            <Badge className={`${styles.templateBadge} gap-1.5`}>
-              <PanelTop size={12} strokeWidth={2} />
-              {activeSection ?? state.templateName}
-            </Badge>
-            <StorePreview mode="mobile" activeSection={activeSection} onSectionClick={onSectionClick} />
+          <div className={styles.mobileCanvas}>
+            <GameStoreMobile activeSection={activeSection} onSectionClick={onSectionClick} />
+          </div>
+        </div>
+      ) : previewMode === 'tablet' ? (
+        <div className={styles.tabletFrame}>
+          <div className={styles.tabletCanvas}>
+            <GameStoreTablet activeSection={activeSection} onSectionClick={onSectionClick} />
           </div>
         </div>
       ) : (
-        /* Desktop: canvas fills the full workspace area */
         <div className={styles.desktopFrame}>
-          <div className={styles.desktopCanvas}>
-            <Badge className={`${styles.templateBadge} gap-1.5`}>
-              <PanelTop size={12} strokeWidth={2} />
-              {activeSection ?? state.templateName}
-            </Badge>
-            <div
-              className={styles.desktopCanvasInner}
-              style={{ transform: `scale(${(state.desktopScale ?? 100) / 100})` }}
-            >
-              <StorePreview mode="desktop" activeSection={activeSection} onSectionClick={onSectionClick} />
-            </div>
+          <div className={styles.desktopCanvas} ref={canvasRef}>
+            <GameStoreDesktop activeSection={activeSection} onSectionClick={onSectionClick} scale={scale} />
           </div>
         </div>
       )}
 
       <div className={styles.modeChip}>
-        <span>{isMobile ? 'Mobile' : 'Desktop'}</span>
-        {!isMobile && <span className={styles.modeChipScale}>{state.desktopScale}%</span>}
+        <span>{{ mobile: 'Mobile', tablet: 'Tablet', desktop: 'Desktop' }[previewMode]}</span>
+        {previewMode === 'desktop' && <span className={styles.modeChipScale}>{Math.round(scale * 100)}%</span>}
+        {previewMode === 'tablet'  && <span className={styles.modeChipScale}>768px</span>}
       </div>
     </div>
   );

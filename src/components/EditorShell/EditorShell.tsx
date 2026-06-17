@@ -16,19 +16,6 @@ function drawerTitle(configSection: string): string {
 
 const BREAKPOINT = 1280;
 
-const LABEL_TO_CONFIG_ID: Record<string, string> = {
-  Header:            'header',
-  Footer:            'footer',
-  Banner:            'bundle',
-  Bundle:            'bundle',
-  Promotion:         'promotion',
-  'Rolling Offer':   'promotion',
-  'Reward Calendar': 'bundle',
-  'Daily Bonus':     'bundle',
-  Popup:             'popup',
-  Store:             'store',
-};
-
 interface Props {
   state: EditorState;
   onStateChange: (s: EditorState) => void;
@@ -45,7 +32,7 @@ export default function EditorShell({ state, onStateChange }: Props) {
   const handleSectionActivate = (id: string, label: string) => {
     setActiveLabel(label);
     setDrawerOpen(true);
-    setConfigSection(LABEL_TO_CONFIG_ID[label] ?? id);
+    setConfigSection(id);
   };
 
   const closeDrawer = () => {

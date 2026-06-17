@@ -6,7 +6,7 @@ export default function App() {
   const [state, setState] = useState<EditorState>({
     activePanel: 'blocks',
     previewMode: 'desktop',
-    desktopScale: 100,
+    desktopScale: 55,
     templateName: 'Summer Sale Template',
     canUndo: true,
     canRedo: false,

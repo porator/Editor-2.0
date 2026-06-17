@@ -215,3 +215,24 @@
   background: var(--color-indigo-700);
   box-shadow: none;
 }
+
+/* ── Device preview group ── */
+.previewGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--color-muted);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+
+.iconBtnActive {
+  background: var(--color-white);
+  color: var(--color-indigo-600);
+  box-shadow: var(--shadow-xs);
+}
+
+.iconBtnActive:hover {
+  background: var(--color-white);
+  color: var(--color-indigo-600);
+}
