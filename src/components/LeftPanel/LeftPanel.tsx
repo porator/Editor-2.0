@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   MoreHorizontal, X, Palette, Wand2,
   ChevronRight, ChevronDown,
   LayoutTemplate, Image, Link2, MousePointer2,
   Gift, Calendar, Ticket,
   ShoppingBag, Timer, ShieldCheck, Star, X as XIcon, AlignLeft,
+  CirclePlus,
 } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
 import { Button } from '../ds/atoms/Button';
-import { Plus } from 'lucide-react';
 import styles from './LeftPanel.module.css';
 
 export interface BottomOverride {
@@ -20,6 +20,7 @@ export interface BottomOverride {
 interface Props {
   state: EditorState;
   onStateChange: (s: EditorState) => void;
+  activeSectionId?: string;
   onSectionActivate?: (sectionId: string, label: string) => void;
   bottomOverride?: BottomOverride;
 }
@@ -145,11 +146,16 @@ const TREE: SectionGroup[] = [
 ];
 
 /* ─── Sections tree panel ─── */
-function BlocksPanel({ onSectionActivate, bottomOverride }: {
+function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   onSectionActivate?: (id: string, label: string) => void;
   bottomOverride?: BottomOverride;
+  activeSectionId?: string;
 }) {
-  const [activeId, setActiveId] = useState('header');
+  const [activeId, setActiveId] = useState(activeSectionId ?? 'header');
+
+  useEffect(() => {
+    if (activeSectionId) setActiveId(activeSectionId);
+  }, [activeSectionId]);
   // tracks which sections are expanded; default: expand 'header'
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -223,7 +229,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride }: {
 
           {group.id === 'template-group' && (
             <div style={{ margin: '8px 16px 4px' }}>
-              <Button variant="outline" size="sm" className="w-full" leadingIcon={<Plus size={14} />}>
+              <Button variant="ghost" size="sm" className="w-full justify-start pl-[22px] gap-[6px] font-normal text-[#4f46e5] hover:text-[#4338ca] hover:bg-[#eef2ff]" leadingIcon={<CirclePlus size={14} strokeWidth={1.75} />}>
                 Add block
               </Button>
             </div>
@@ -320,10 +326,10 @@ function PersonalizationPanel() {
   );
 }
 
-export default function LeftPanel({ state, onSectionActivate, bottomOverride }: Props) {
+export default function LeftPanel({ state, activeSectionId, onSectionActivate, bottomOverride }: Props) {
   return (
     <aside className={styles.panel} aria-label="Editor panel">
-      {state.activePanel === 'blocks'          && <BlocksPanel onSectionActivate={onSectionActivate} bottomOverride={bottomOverride} />}
+      {state.activePanel === 'blocks'          && <BlocksPanel activeSectionId={activeSectionId} onSectionActivate={onSectionActivate} bottomOverride={bottomOverride} />}
       {state.activePanel === 'brandKit'        && <BrandKitPanel />}
       {state.activePanel === 'personalization' && <PersonalizationPanel />}
     </aside>

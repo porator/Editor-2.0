@@ -47,6 +47,7 @@ export default function EditorShell({ state, onStateChange }: Props) {
         <LeftPanel
           state={state}
           onStateChange={onStateChange}
+          activeSectionId={configSection ?? undefined}
           onSectionActivate={handleSectionActivate}
           bottomOverride={isNarrow && drawerOpen && configSection ? {
             title: drawerTitle(configSection),
@@ -57,8 +58,8 @@ export default function EditorShell({ state, onStateChange }: Props) {
         <PreviewWorkspace
           state={state}
           onStateChange={onStateChange}
-          activeSection={activeLabel}
-          onSectionClick={(name) => handleSectionActivate(name, name)}
+          activeSection={configSection ?? undefined}
+          onSectionClick={(id, label) => handleSectionActivate(id, label)}
         />
         {!isNarrow && drawerOpen && configSection && (
           <ConfigDrawer

@@ -5,6 +5,8 @@ import {
   CodeXml,
   Undo2,
   Redo2,
+  Eye,
+  EyeOff,
   Monitor,
   Tablet,
   Smartphone,
@@ -97,15 +99,27 @@ export default function TopNavigation({ state, onStateChange }: Props) {
           </button>
         </div>
 
-        {/* Device preview selector — cycles Desktop → Tablet → Mobile */}
-        <button
-          className={`${styles.iconBtn} ${styles.iconBtnActive}`}
-          title={`Switch to ${next.label}`}
-          aria-label={`Current: ${current.label}. Click to switch to ${next.label}`}
-          onClick={() => set({ previewMode: next.mode })}
-        >
-          <CycleIcon size={16} strokeWidth={1.75} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* White label toggle */}
+          <button
+            className={`${styles.iconBtn} ${state.whiteLabel ? styles.iconBtnActive : ''}`}
+            title={state.whiteLabel ? 'Show branded' : 'Show white label'}
+            aria-label={state.whiteLabel ? 'Show branded' : 'Show white label'}
+            onClick={() => set({ whiteLabel: !state.whiteLabel })}
+          >
+            {state.whiteLabel ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
+          </button>
+
+          {/* Device preview selector — cycles Desktop → Tablet → Mobile */}
+          <button
+            className={`${styles.iconBtn} ${styles.iconBtnActive}`}
+            title={`Switch to ${next.label}`}
+            aria-label={`Current: ${current.label}. Click to switch to ${next.label}`}
+            onClick={() => set({ previewMode: next.mode })}
+          >
+            <CycleIcon size={16} strokeWidth={1.75} />
+          </button>
+        </div>
 
         {/* Save */}
         <Button size="sm" aria-label="Save template">Save</Button>

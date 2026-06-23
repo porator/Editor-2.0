@@ -8,4 +8,5 @@ export interface EditorState {
   templateName: string;
   canUndo: boolean;
   canRedo: boolean;
+  whiteLabel: boolean;
 }
