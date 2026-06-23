@@ -158,9 +158,50 @@
 
 .chevronBtn:hover { opacity: 1; }
 
+
 .sectionIcon {
   flex-shrink: 0;
   opacity: 0.75;
+}
+
+/* Icon swap: LayoutTemplate → GripVertical on row hover */
+.sectionIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.sectionIconDefault { display: block; }
+.sectionIconGrip    { display: none; cursor: grab; }
+
+.sectionRowHoverable:hover .sectionIconDefault { display: none; }
+.sectionRowHoverable:hover .sectionIconGrip    { display: block; }
+
+/* Drag states */
+.sectionRowDragging { opacity: 0.35; }
+
+/* Insertion line shown between sections while dragging */
+.dragDivider {
+  height: 2px;
+  background: #6366f1;
+  border-radius: 2px;
+  margin: 0 2px;
+  position: relative;
+}
+
+.dragDivider::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6366f1;
 }
 
 .sectionLabel {
@@ -173,6 +214,48 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.sectionIconHidden { opacity: 0.35; }
+.sectionLabelHidden { opacity: 0.45; }
+
+/* Eye toggle button — hidden until row is hovered */
+.eyeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  color: var(--color-gray-400);
+  opacity: 0;
+  transition: opacity 120ms ease, color 120ms ease;
+}
+
+.eyeBtn:hover { color: var(--color-gray-600); }
+
+/* Show eye on row hover, or always when section is hidden */
+.sectionRowHoverable:hover .eyeBtn { opacity: 1; }
+
+/* eyeBtnVisible — always show (used when section is hidden) */
+.eyeBtnVisible { opacity: 1; }
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  color: var(--color-gray-400);
+  opacity: 0;
+  transition: opacity 120ms ease, color 120ms ease;
+}
+
+.deleteBtn:hover { color: #ef4444; }
+
+.sectionRowHoverable:hover .deleteBtn { opacity: 1; }
 
 /* Blocks inside a section */
 .blockList {

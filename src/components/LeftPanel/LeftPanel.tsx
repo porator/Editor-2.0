@@ -5,7 +5,7 @@ import {
   LayoutTemplate, Image, Link2, MousePointer2,
   Gift, Calendar, Ticket,
   ShoppingBag, Timer, ShieldCheck, Star, X as XIcon, AlignLeft,
-  CirclePlus,
+  CirclePlus, Eye, EyeOff, GripVertical, Trash2,
 } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
 import { Button } from '../ds/atoms/Button';
@@ -158,6 +158,52 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   }, [activeSectionId]);
   // tracks which sections are expanded; default: expand 'header'
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // tracks which sections are hidden (eye toggle)
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+
+  const toggleHidden = (id: string) =>
+    setHidden((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  // deleted sections (template-group only)
+  const [deleted, setDeleted] = useState<Set<string>>(new Set());
+  const deleteSection = (id: string) =>
+    setDeleted((prev) => { const next = new Set(prev); next.add(id); return next; });
+
+  // drag-reorder state for template-group
+  const templateGroup = TREE.find((g) => g.id === 'template-group')!;
+  const [sectionOrder, setSectionOrder] = useState<string[]>(
+    () => templateGroup.sections.map((s) => s.id)
+  );
+  const [dragId, setDragId]     = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState<string | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.effectAllowed = 'move';
+    setDragId(id);
+  };
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (id !== dragId) setDragOver(id);
+  };
+  const handleDrop = (targetId: string) => {
+    if (!dragId || dragId === targetId) { setDragId(null); setDragOver(null); return; }
+    setSectionOrder((prev) => {
+      const next = [...prev];
+      const from = next.indexOf(dragId);
+      const to   = next.indexOf(targetId);
+      next.splice(from, 1);
+      next.splice(to, 0, dragId);
+      return next;
+    });
+    setDragId(null);
+    setDragOver(null);
+  };
+  const handleDragEnd = () => { setDragId(null); setDragOver(null); };
 
   const toggle = (id: string) =>
     setExpanded((prev) => {
@@ -172,16 +218,30 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         <div key={group.id} className={styles.treeGroup}>
           <p className={styles.treeGroupLabel}>{group.label}</p>
 
-          {group.sections.map((section) => {
+          {(group.id === 'template-group'
+            ? sectionOrder.filter((id) => !deleted.has(id)).map((id) => templateGroup.sections.find((s) => s.id === id)!)
+            : group.sections
+          ).map((section) => {
             const isExpanded = expanded.has(section.id);
             const isActive   = activeId === section.id;
             const hasBlocks  = section.blocks.length > 0;
+            const isHidden   = hidden.has(section.id);
+            const isBlocks   = group.id === 'template-group';
+            const isDragging = dragId === section.id;
+            const isDragOver = dragOver === section.id && !isDragging;
 
             return (
-              <div key={section.id}>
+              <div
+                key={section.id}
+                onDragOver={isBlocks ? (e) => handleDragOver(e, section.id) : undefined}
+                onDrop={isBlocks ? () => handleDrop(section.id) : undefined}
+              >
+                {/* Insertion line above this section while dragging */}
+                {isDragOver && <div className={styles.dragDivider} />}
+
                 {/* Section row */}
                 <div
-                  className={`${styles.sectionRow} ${isActive ? styles.sectionRowActive : ''}`}
+                  className={`${styles.sectionRow} ${isActive ? styles.sectionRowActive : ''} ${isBlocks ? styles.sectionRowHoverable : ''} ${isDragging ? styles.sectionRowDragging : ''}`}
                   onClick={() => {
                     setActiveId(section.id);
                     onSectionActivate?.(section.id, section.label);
@@ -198,8 +258,36 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                       ? <ChevronDown size={13} strokeWidth={2.5} />
                       : <ChevronRight size={13} strokeWidth={2.5} />}
                   </button>
-                  <LayoutTemplate size={14} strokeWidth={1.75} className={styles.sectionIcon} />
-                  <span className={styles.sectionLabel}>{section.label}</span>
+                  {/* Icon: LayoutTemplate by default, GripVertical on hover (blocks only) */}
+                  <span
+                    className={`${styles.sectionIconWrap} ${isHidden ? styles.sectionIconHidden : ''}`}
+                    draggable={isBlocks}
+                    onDragStart={isBlocks ? (e) => handleDragStart(e, section.id) : undefined}
+                    onDragEnd={isBlocks ? handleDragEnd : undefined}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <LayoutTemplate size={14} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
+                    {isBlocks && <GripVertical size={14} strokeWidth={1.75} className={styles.sectionIconGrip} />}
+                  </span>
+                  <span className={`${styles.sectionLabel} ${isHidden ? styles.sectionLabelHidden : ''}`}>{section.label}</span>
+                  {isBlocks && (
+                    <>
+                      <button
+                        className={`${styles.eyeBtn} ${isHidden ? styles.eyeBtnVisible : ''}`}
+                        onClick={(e) => { e.stopPropagation(); toggleHidden(section.id); }}
+                        aria-label={isHidden ? 'Show section' : 'Hide section'}
+                      >
+                        {isHidden ? <EyeOff size={13} strokeWidth={1.75} /> : <Eye size={13} strokeWidth={1.75} />}
+                      </button>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={(e) => { e.stopPropagation(); deleteSection(section.id); }}
+                        aria-label="Delete section"
+                      >
+                        <Trash2 size={13} strokeWidth={1.75} />
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 {/* Blocks */}
@@ -228,10 +316,14 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           })}
 
           {group.id === 'template-group' && (
-            <div style={{ margin: '8px 16px 4px' }}>
-              <Button variant="ghost" size="sm" className="w-full justify-start pl-[22px] gap-[6px] font-normal text-[#4f46e5] hover:text-[#4338ca] hover:bg-[#eef2ff]" leadingIcon={<CirclePlus size={14} strokeWidth={1.75} />}>
-                Add block
-              </Button>
+            <div
+              className={styles.sectionRow}
+              style={{ color: '#4f46e5' }}
+              onClick={() => {}}
+            >
+              <span style={{ width: 18, height: 18, flexShrink: 0 }} />
+              <CirclePlus size={14} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+              <span className={styles.sectionLabel} style={{ color: '#4f46e5' }}>Add block</span>
             </div>
           )}
         </div>
