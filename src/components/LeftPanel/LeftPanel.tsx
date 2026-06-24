@@ -4,7 +4,7 @@ import {
   ChevronRight, ChevronDown,
   LayoutTemplate, Image, Link2, MousePointer2,
   Gift, Calendar, Ticket,
-  ShoppingBag, Timer, ShieldCheck, Star, X as XIcon, AlignLeft,
+  ShoppingBag, Timer, Star, X as XIcon, AlignLeft,
   CirclePlus, Eye, EyeOff, GripVertical, Trash2,
 } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
@@ -85,7 +85,6 @@ const TREE: SectionGroup[] = [
         blocks: [
           { id: 'promo-products',     label: 'Products',    icon: ShoppingBag },
           { id: 'promo-timer',        label: 'Timer',       icon: Timer },
-          { id: 'promo-availability', label: 'Availability', icon: ShieldCheck },
           { id: 'promo-button',       label: 'Button',      icon: MousePointer2 },
           { id: 'promo-badge',        label: 'Badge',       icon: Star },
         ],

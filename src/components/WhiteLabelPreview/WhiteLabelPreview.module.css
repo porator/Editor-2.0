@@ -1,0 +1,337 @@
+/* ═══════════════════════════════════════
+   White Label Preview Renderer
+   ═══════════════════════════════════════ */
+
+.renderer {
+  width: 100%;
+  background: #F5F5F7;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 100%;
+}
+
+/* ── Block wrapper with selection highlight ── */
+.block {
+  position: relative;
+  cursor: pointer;
+}
+
+.blockSelected {
+  outline: 2px solid #5B4DFF;
+  z-index: 2;
+}
+
+.selectionLabel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #5B4DFF;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 0 0 6px 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.01em;
+}
+
+/* ── Skeleton atom ── */
+.skel {
+  background: #E0E0E5;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   Header
+   ═══════════════════════════════════════ */
+.header {
+  background: #fff;
+  padding: 12px 14px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #E0E0E5;
+  flex-shrink: 0;
+}
+
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.headerBalance {
+  display: flex;
+  gap: 6px;
+}
+
+.balancePill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #F2F2F7;
+  border-radius: 20px;
+  padding: 5px 10px;
+}
+
+.balanceDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #D1D1D6;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   Banner
+   ═══════════════════════════════════════ */
+.bannerSection {
+  padding: 8px 10px;
+  background: #F5F5F7;
+}
+
+.bannerCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.bannerLogo {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: #EDEDF0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bannerLogoInner {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #D8D8DD;
+}
+
+.bannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ═══════════════════════════════════════
+   Promotion — "Welcome Offer" card
+   ═══════════════════════════════════════ */
+.promotionSection {
+  padding: 6px 10px 10px;
+  background: #F5F5F7;
+}
+
+.promotionCard {
+  background: #EEEEF3;
+  border-radius: 16px;
+  padding: 12px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promotionTitle {
+  text-align: center;
+}
+
+/* Featured hero item */
+.promoHero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.promoHeroImage {
+  width: 64px;
+  height: 72px;
+  border-radius: 8px;
+  background: #D4D4DB;
+  /* crown silhouette shape */
+  clip-path: polygon(20% 100%, 0% 40%, 25% 60%, 50% 0%, 75% 60%, 100% 40%, 80% 100%);
+}
+
+.promoHeroImageAlt {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #D4D4DB;
+}
+
+.promoHeroPrice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Product item grid */
+.promoItemsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.promoItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.promoItemImg {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #C8C8D2;
+  flex-shrink: 0;
+}
+
+/* Timer row */
+.promoTimerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+}
+
+/* Buy button */
+.buyBtn {
+  height: 32px;
+  border-radius: 10px;
+  background: #C8C8D2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ═══════════════════════════════════════
+   Bundle card (reused for each bundle)
+   ═══════════════════════════════════════ */
+.bundleSection {
+  padding: 4px 10px;
+  background: #F5F5F7;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bundleCard {
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.bundleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bundleHeroImg {
+  width: 52px;
+  height: 58px;
+  border-radius: 8px;
+  background: #D4D4DB;
+  clip-path: polygon(20% 100%, 0% 40%, 25% 60%, 50% 0%, 75% 60%, 100% 40%, 80% 100%);
+  flex-shrink: 0;
+}
+
+.bundleHeroInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bundleItemsRow {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.bundleSmallItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.bundleSmallImg {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #C8C8D2;
+}
+
+/* ═══════════════════════════════════════
+   Rolling Offer
+   ═══════════════════════════════════════ */
+.rollingSection {
+  padding: 4px 10px 8px;
+  background: #F5F5F7;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ═══════════════════════════════════════
+   Footer
+   ═══════════════════════════════════════ */
+.footerSection {
+  background: #fff;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.footerTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footerLogo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #E0E0E5;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

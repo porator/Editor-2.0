@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { PanelTop } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
+import WhiteLabelStoreRenderer from '../WhiteLabelPreview/WhiteLabelPreview';
 import styles from './PreviewWorkspace.module.css';
 
 const IMG_W = 1600;
@@ -69,16 +70,24 @@ function GameStoreDesktop({ activeSection, onSectionClick, scale }: {
   );
 }
 
-/* Mobile preview — Figma screenshot with section overlays */
+/* Mobile preview — dynamic renderer in white label mode, static image otherwise */
 function GameStoreMobile({ activeSection, onSectionClick, whiteLabel }: {
   activeSection?: string;
   onSectionClick?: SectionClickHandler;
   whiteLabel?: boolean;
 }) {
+  if (whiteLabel) {
+    return (
+      <WhiteLabelStoreRenderer
+        activeSection={activeSection}
+        onSectionClick={onSectionClick}
+      />
+    );
+  }
   return (
     <div className={styles.gameImageRootMobile}>
       <img
-        src={whiteLabel ? MOBILE_IMG_WL : MOBILE_IMG}
+        src={MOBILE_IMG}
         alt="Store preview — mobile"
         className={styles.gameImageMobile}
         draggable={false}

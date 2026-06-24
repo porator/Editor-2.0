@@ -11,7 +11,7 @@ import styles from './EditorShell.module.css';
 function drawerTitle(configSection: string): string {
   const cfg = SECTION_CONFIGS[configSection] ?? SUB_BLOCK_CONFIGS[configSection];
   if (!cfg) return configSection;
-  return cfg.parentLabel ? `${cfg.parentLabel} → ${cfg.label}` : cfg.label;
+  return cfg.label;
 }
 
 const BREAKPOINT = 1280;

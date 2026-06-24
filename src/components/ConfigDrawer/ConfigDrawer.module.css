@@ -91,46 +91,152 @@
 .body::-webkit-scrollbar { width: 4px; }
 .body::-webkit-scrollbar-thumb { background: var(--color-gray-200); border-radius: 2px; }
 
-/* ── Accordion group ── */
-.group {
+/* ── Section heading ── */
+.sectionHeading {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-gray-400);
+  padding: 16px 16px 8px;
   border-bottom: 1px solid var(--color-border);
 }
 
-.group:last-child {
-  border-bottom: none;
+/* ── Config row ── */
+.configRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.groupHeader {
+.rowHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 20px 16px;
-  transition: background 120ms ease;
+  gap: 8px;
 }
 
-.groupHeader:hover {
-  background: var(--color-muted);
-}
-
-.groupLabel {
+.rowName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
   color: var(--color-foreground);
-  letter-spacing: 0.02em;
+  line-height: 1.2;
 }
 
-.groupChevron {
+.lockIcon {
   color: var(--color-gray-400);
   flex-shrink: 0;
 }
 
-.groupBody {
+.rowDetail {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.rowTags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.tagChip {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.statusBadge {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* ── Inline controls under a row ── */
+.rowControls {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 4px 20px 16px;
+  margin-top: 6px;
+  padding: 12px 12px 4px;
+  border-top: 1px dashed var(--color-border);
+}
+
+/* ── Muted / blocked row states ── */
+.rowMuted .rowName,
+.rowMuted .rowDetail {
+  opacity: 0.55;
+}
+
+.rowBlocked {
+  background: var(--color-muted);
+}
+
+.rowBlocked .rowControls {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ── Sub-element navigation entry (Level 1 → Level 2) ── */
+.subNavEntry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-foreground);
+  transition: background 120ms ease;
+}
+
+.subNavEntry:hover {
+  background: var(--color-muted);
+}
+
+.subNavEntry svg {
+  color: var(--color-gray-400);
+}
+
+/* ── Inline back (narrow body, Level 2 → Level 1) ── */
+.inlineBack {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 16px;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+  border-bottom: 1px solid var(--color-border);
+  transition: color 120ms ease;
+}
+
+.inlineBack:hover {
+  color: var(--color-foreground);
 }
 
 /* ── Controls ── */

@@ -773,35 +773,6 @@ export const SUB_BLOCK_CONFIGS: Record<string, SectionConfig> = {
     parentLabel: 'Promotion',
     categories: timerCats,
   },
-  'promo-availability': {
-    label: 'Availability',
-    parentLabel: 'Promotion',
-    categories: [
-      {
-        id: 'typography',
-        label: 'Typography',
-        controls: [
-          { id: 'avail-font-size',   label: 'Font size',   type: 'range',  defaultValue: 12, min: 10, max: 20 },
-          { id: 'avail-font-weight', label: 'Font weight', type: 'select', options: ['400', '500', '600'], defaultValue: '500' },
-          { id: 'avail-color',       label: 'Color',       type: 'color',  defaultValue: '#ffffff' },
-        ],
-      },
-      {
-        id: 'color-fill',
-        label: 'Color & Fill',
-        controls: [
-          { id: 'avail-bg', label: 'Background color', type: 'color', defaultValue: '#22c55e' },
-        ],
-      },
-      {
-        id: 'visibility',
-        label: 'Visibility',
-        controls: [
-          { id: 'show-availability', label: 'Show availability indicator', type: 'toggle', defaultValue: true },
-        ],
-      },
-    ],
-  },
   'promo-button': {
     label: 'Button',
     parentLabel: 'Promotion',
@@ -1143,3 +1114,159 @@ export const SUB_BLOCK_CONFIGS: Record<string, SectionConfig> = {
     ],
   },
 };
+
+/* ─────────────────────────────────────────────────────────────────
+   TWO-LEVEL DRAWER MODEL
+   The drawer presents each block across two navigation levels:
+     • Level 1 (layout)  — container-level config rows
+     • Level 2 (sub)     — sub-element sections + config rows
+   Each ConfigRow keeps its functional controls and additionally
+   carries `tags` (CSS categories) + `avail` (readiness) metadata.
+───────────────────────────────────────────────────────────────── */
+
+export type CssTag =
+  | 'Fill' | 'Border' | 'Layout' | 'Typography'
+  | 'Visibility' | 'Asset' | 'Shadow/FX' | 'Behavior';
+
+export type Availability =
+  | 'UI ready' | 'Partial' | 'Not yet' | 'pAPI only' | 'Blocked';
+
+export interface ConfigRow {
+  id: string;
+  el: string;          // property / element name, e.g. "Card container"
+  detail: string;      // description text
+  tags: CssTag[];      // CSS category tags
+  avail: Availability; // readiness status
+  controls: Control[]; // functional controls (merged from category)
+}
+
+export interface SectionNode {
+  section: string;     // section heading, e.g. "CARD"
+}
+
+export type SubNode = ConfigRow | SectionNode;
+
+export function isSection(node: SubNode): node is SectionNode {
+  return 'section' in node;
+}
+
+export interface BlockConfig {
+  id: string;
+  label: string;
+  parentLabel?: string;
+  layout: ConfigRow[]; // Level 1 rows
+  sub: SubNode[];      // Level 2 sections + rows
+}
+
+/* Map a category id → its CSS-category tags. Falls back to ['Layout']. */
+const CATEGORY_TAGS: Record<string, CssTag[]> = {
+  'asset':                 ['Asset'],
+  'background':            ['Asset', 'Fill'],
+  'color-fill':            ['Fill'],
+  'typography':            ['Typography'],
+  'typography-title':      ['Typography'],
+  'typography-subtitle':   ['Typography'],
+  'typography-description':['Typography'],
+  'positioning':           ['Layout', 'Visibility'],
+  'visibility':            ['Visibility'],
+  'grid-layout':           ['Layout'],
+  'layout-structure':      ['Layout', 'Border'],
+  'spacing':               ['Layout'],
+  'gallery':               ['Layout', 'Behavior'],
+  'shadow-effects':        ['Shadow/FX'],
+  'border':                ['Border'],
+  'product-image':         ['Asset', 'Border', 'Layout'],
+  'badge-system':          ['Asset', 'Fill', 'Typography'],
+  'timer-display':         ['Behavior'],
+};
+
+function tagsForCategory(catId: string): CssTag[] {
+  return CATEGORY_TAGS[catId] ?? ['Layout'];
+}
+
+/* Build a description string from a category's control labels. */
+function detailForCategory(cat: Category): string {
+  return cat.controls.map((c) => c.label).join(', ');
+}
+
+function rowFromCategory(cat: Category, idPrefix: string): ConfigRow {
+  return {
+    id: `${idPrefix}-${cat.id}`,
+    el: cat.label,
+    detail: detailForCategory(cat),
+    tags: tagsForCategory(cat.id),
+    avail: 'UI ready',
+    controls: cat.controls,
+  };
+}
+
+/* Resolve any selected id (top-level block OR sub-block) to its
+   top-level block id, so the drawer always renders the full block. */
+export function resolveBlockId(selectedId: string): string {
+  if (SECTION_CONFIGS[selectedId]) return selectedId;
+  const sub = SUB_BLOCK_CONFIGS[selectedId];
+  if (sub?.parentLabel) {
+    const parentId = Object.keys(SECTION_CONFIGS)
+      .find((k) => SECTION_CONFIGS[k].label === sub.parentLabel);
+    if (parentId) return parentId;
+  }
+  return selectedId;
+}
+
+/* True when the selected id refers to a sub-element (Level 2 entry). */
+export function isSubBlock(selectedId: string): boolean {
+  return Boolean(SUB_BLOCK_CONFIGS[selectedId]);
+}
+
+/* Level 2 nodes scoped to a single sub-element (section heading + its rows). */
+export function getSubElementNodes(subId: string): SubNode[] {
+  const cfg = SUB_BLOCK_CONFIGS[subId];
+  if (!cfg) return [];
+  const nodes: SubNode[] = [{ section: cfg.label.toUpperCase() }];
+  for (const cat of cfg.categories) nodes.push(rowFromCategory(cat, subId));
+  return nodes;
+}
+
+/* Display label for a sub-element id. */
+export function getSubElementLabel(subId: string): string {
+  return SUB_BLOCK_CONFIGS[subId]?.label ?? subId;
+}
+
+/* Flat config rows for a single sub-element (no section heading). */
+export function getSubElementRows(subId: string): ConfigRow[] {
+  const cfg = SUB_BLOCK_CONFIGS[subId];
+  if (!cfg) return [];
+  return cfg.categories.map((cat) => rowFromCategory(cat, subId));
+}
+
+/* Derive the two-level BlockConfig for a given selected id. */
+export function getBlockConfig(selectedId: string): BlockConfig | null {
+  const topId = resolveBlockId(selectedId);
+  const block = SECTION_CONFIGS[topId];
+
+  // Sub-block selected but with no top-level parent config — render it alone.
+  if (!block) {
+    const orphan = SUB_BLOCK_CONFIGS[topId];
+    if (!orphan) return null;
+    return {
+      id: topId,
+      label: orphan.label,
+      parentLabel: orphan.parentLabel,
+      layout: orphan.categories.map((c) => rowFromCategory(c, topId)),
+      sub: [],
+    };
+  }
+
+  const layout = block.categories.map((c) => rowFromCategory(c, topId));
+
+  const sub: SubNode[] = [];
+  for (const [sid, scfg] of Object.entries(SUB_BLOCK_CONFIGS)) {
+    if (scfg.parentLabel !== block.label) continue;
+    sub.push({ section: scfg.label.toUpperCase() });
+    for (const cat of scfg.categories) {
+      sub.push(rowFromCategory(cat, sid));
+    }
+  }
+
+  return { id: topId, label: block.label, layout, sub };
+}
