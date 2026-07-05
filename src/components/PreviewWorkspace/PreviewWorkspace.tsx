@@ -7,8 +7,8 @@ import styles from './PreviewWorkspace.module.css';
 const IMG_W = 1600;
 const IMG_H = 1132;
 
-const MOBILE_IMG        = '/preview-mobile.jpg.jpg';
-const MOBILE_IMG_WL     = '/White label.jpg';
+const MOBILE_IMG        = `${import.meta.env.BASE_URL}preview-mobile.jpg.jpg`;
+const MOBILE_IMG_WL     = `${import.meta.env.BASE_URL}White label.jpg`;
 
 interface Props {
   state: EditorState;

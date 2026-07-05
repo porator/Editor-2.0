@@ -5,7 +5,15 @@
       "name": "editor-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 5173
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "Storybook",
+      "runtimeExecutable": "/Users/orporat/(AC)ClaudeCode /Storybook/atom-components/node_modules/.bin/storybook",
+      "runtimeArgs": ["dev", "--config-dir", "/Users/orporat/(AC)ClaudeCode /Storybook/atom-components/.storybook"],
+      "port": 6006,
+      "autoPort": true
     }
   ]
 }
