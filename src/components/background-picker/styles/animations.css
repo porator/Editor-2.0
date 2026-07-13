@@ -1,0 +1,21 @@
+/* Subtle editor-swap transition (framer-motion-free). */
+@keyframes bgpicker-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bgpicker-fade {
+  animation: bgpicker-fade 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bgpicker-fade {
+    animation: none;
+  }
+}
