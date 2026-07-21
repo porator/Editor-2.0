@@ -5,8 +5,6 @@ import {
   CodeXml,
   Undo2,
   Redo2,
-  Eye,
-  EyeOff,
   Monitor,
   Tablet,
   Smartphone,
@@ -14,6 +12,9 @@ import {
 import type { PreviewMode } from '../../types/editor';
 import type { EditorState, ActivePanel } from '../../types/editor';
 import { Button } from '../ds/atoms/Button';
+import {
+  Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
+} from '../ds/composites/Tooltip';
 import styles from './TopNavigation.module.css';
 
 interface Props {
@@ -21,10 +22,10 @@ interface Props {
   onStateChange: (s: EditorState) => void;
 }
 
-const NAV_TABS: { id: ActivePanel; icon: React.ElementType; label: string }[] = [
-  { id: 'blocks',          icon: PanelTop,   label: 'Blocks' },
-  { id: 'brandKit',        icon: SwatchBook, label: 'Brand Kit' },
-  { id: 'personalization', icon: CodeXml,    label: 'Personalization' },
+const NAV_TABS: { id: ActivePanel; icon: React.ElementType; label: string; tooltip: string }[] = [
+  { id: 'blocks',          icon: PanelTop,   label: 'Blocks',          tooltip: 'Blocks' },
+  { id: 'brandKit',        icon: SwatchBook, label: 'Brand Kit',       tooltip: 'Brand Kit' },
+  { id: 'personalization', icon: CodeXml,    label: 'Personalization', tooltip: 'Personalization' },
 ];
 
 export default function TopNavigation({ state, onStateChange }: Props) {
@@ -45,28 +46,38 @@ export default function TopNavigation({ state, onStateChange }: Props) {
 
       {/* ── Left: Exit + nav tabs ── */}
       <div className={styles.leftGroup}>
-        <div className={styles.exitGroup}>
-          <button className={styles.iconBtn} title="Exit editor" aria-label="Exit editor">
-            <ArrowLeftToLine size={16} strokeWidth={1.75} />
-          </button>
-          <div className={styles.divider} aria-hidden />
-        </div>
+        <TooltipProvider delayDuration={150}>
+          <div className={styles.exitGroup}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className={styles.iconBtn} aria-label="Exit editor">
+                  <ArrowLeftToLine size={16} strokeWidth={1.75} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>Exit</TooltipContent>
+            </Tooltip>
+            <div className={styles.divider} aria-hidden />
+          </div>
 
-        <nav className={styles.tabGroup} role="tablist" aria-label="Editor panels">
-          {NAV_TABS.map(({ id, icon: Icon, label }) => (
-            <button
-              key={id}
-              role="tab"
-              aria-selected={state.activePanel === id}
-              aria-label={label}
-              title={label}
-              className={`${styles.tabBtn} ${state.activePanel === id ? styles.tabBtnActive : ''}`}
-              onClick={() => set({ activePanel: id })}
-            >
-              <Icon size={16} strokeWidth={1.75} />
-            </button>
-          ))}
-        </nav>
+          <nav className={styles.tabGroup} role="tablist" aria-label="Editor panels">
+            {NAV_TABS.map(({ id, icon: Icon, label, tooltip }) => (
+              <Tooltip key={id}>
+                <TooltipTrigger asChild>
+                  <button
+                    role="tab"
+                    aria-selected={state.activePanel === id}
+                    aria-label={label}
+                    className={`${styles.tabBtn} ${state.activePanel === id ? styles.tabBtnActive : ''}`}
+                    onClick={() => set({ activePanel: id })}
+                  >
+                    <Icon size={16} strokeWidth={1.75} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>{tooltip}</TooltipContent>
+              </Tooltip>
+            ))}
+          </nav>
+        </TooltipProvider>
       </div>
 
       {/* ── Center: Template name ── */}
@@ -100,16 +111,6 @@ export default function TopNavigation({ state, onStateChange }: Props) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* White label toggle */}
-          <button
-            className={`${styles.iconBtn} ${state.whiteLabel ? styles.iconBtnActive : ''}`}
-            title={state.whiteLabel ? 'Show branded' : 'Show white label'}
-            aria-label={state.whiteLabel ? 'Show branded' : 'Show white label'}
-            onClick={() => set({ whiteLabel: !state.whiteLabel })}
-          >
-            {state.whiteLabel ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
-          </button>
-
           {/* Device preview selector — cycles Desktop → Tablet → Mobile */}
           <button
             className={`${styles.iconBtn} ${styles.iconBtnActive}`}

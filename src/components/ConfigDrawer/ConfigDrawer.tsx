@@ -11,6 +11,9 @@ import {
   DropdownMenuContent, DropdownMenuItem,
 } from '../ds/composites/Dropdown';
 import {
+  Popover, PopoverTrigger, PopoverContent,
+} from '../ds/composites/Popover';
+import {
   getBlockConfig, isSection, isSubBlock,
   getSubElementRows, getSubElementLabel,
 } from './config-data';
@@ -73,14 +76,52 @@ function ToggleControl({ control, disabled }: { control: Control; disabled?: boo
   );
 }
 
+const PICKER_COLORS = [
+  '#ec4899',
+  '#f43f5e',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#06b6d4',
+  '#0ea5e9',
+  '#6366f1',
+  '#a855f7',
+];
+
 function ColorControl({ control }: { control: Control }) {
+  const [color, setColor] = useState(String(control.defaultValue ?? '#e5e5e5'));
   return (
     <div className={styles.controlRow}>
       <span className={styles.controlLabel}>{control.label}</span>
-      <div
-        className={styles.colorSwatch}
-        style={{ background: String(control.defaultValue ?? '#e5e5e5') }}
-      />
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={styles.colorSwatch}
+            style={{ background: color }}
+            aria-label={`${control.label}: ${color}`}
+          />
+        </PopoverTrigger>
+        <PopoverContent side="left" align="start" sideOffset={24} className="w-56">
+          <div className="space-y-3">
+            <p className="text-sm font-medium">Choose a color</p>
+            <div className="grid grid-cols-3 gap-2">
+              {PICKER_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={`w-full aspect-square rounded-md border-2 transition-colors ${
+                    color === c ? 'border-zinc-900' : 'border-[#e5e5e5]'
+                  }`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+            <p className="text-xs text-gray-500">Selected: {color}</p>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

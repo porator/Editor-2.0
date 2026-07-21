@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { EditorState } from '../../types/editor';
 import { useWindowWidth } from '../../hooks/useWindowWidth';
+import { SectionFocusProvider } from '../../hooks/useSectionFocus';
 import TopNavigation from '../TopNavigation/TopNavigation';
 import LeftPanel from '../LeftPanel/LeftPanel';
 import PreviewWorkspace from '../PreviewWorkspace/PreviewWorkspace';
@@ -41,6 +42,7 @@ export default function EditorShell({ state, onStateChange }: Props) {
   };
 
   return (
+    <SectionFocusProvider>
     <div className={styles.shell}>
       <TopNavigation state={state} onStateChange={onStateChange} />
       <div className={styles.body}>
@@ -70,5 +72,6 @@ export default function EditorShell({ state, onStateChange }: Props) {
         )}
       </div>
     </div>
+    </SectionFocusProvider>
   );
 }

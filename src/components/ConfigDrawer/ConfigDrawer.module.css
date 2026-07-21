@@ -2,7 +2,7 @@
 .drawer {
   display: flex;
   flex-direction: column;
-  width: 288px;
+  width: var(--panel-width);
   flex-shrink: 0;
   height: calc(100% - 20px);
   min-height: 0;

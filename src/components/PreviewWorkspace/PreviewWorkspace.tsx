@@ -2,13 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { PanelTop } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
 import WhiteLabelStoreRenderer from '../WhiteLabelPreview/WhiteLabelPreview';
+import StorePreview from '../StorePreview/StorePreview';
 import styles from './PreviewWorkspace.module.css';
 
 const IMG_W = 1600;
 const IMG_H = 1132;
-
-const MOBILE_IMG        = `${import.meta.env.BASE_URL}preview-mobile.jpg.jpg`;
-const MOBILE_IMG_WL     = `${import.meta.env.BASE_URL}White label.jpg`;
 
 interface Props {
   state: EditorState;
@@ -70,7 +68,7 @@ function GameStoreDesktop({ activeSection, onSectionClick, scale }: {
   );
 }
 
-/* Mobile preview — dynamic renderer in white label mode, static image otherwise */
+/* Mobile preview — dynamic renderer in white label mode, modular StorePreview otherwise */
 function GameStoreMobile({ activeSection, onSectionClick, whiteLabel }: {
   activeSection?: string;
   onSectionClick?: SectionClickHandler;
@@ -85,18 +83,10 @@ function GameStoreMobile({ activeSection, onSectionClick, whiteLabel }: {
     );
   }
   return (
-    <div className={styles.gameImageRootMobile}>
-      <img
-        src={MOBILE_IMG}
-        alt="Store preview — mobile"
-        className={styles.gameImageMobile}
-        draggable={false}
-      />
-      <SectionOverlay id="header"        name="Header"        top="0%"      height="8.5%"   activeSection={activeSection} onSectionClick={onSectionClick} />
-      <SectionOverlay id="promotion"     name="Promotion"     top="12.47%"  height="18.90%" activeSection={activeSection} onSectionClick={onSectionClick} />
-      <SectionOverlay id="bundle"        name="Bundle"        top="36%"     height="28%"    activeSection={activeSection} onSectionClick={onSectionClick} />
-      <SectionOverlay id="rolling-offer" name="Rolling Offer" top="68%"     height="22%"    activeSection={activeSection} onSectionClick={onSectionClick} />
-    </div>
+    <StorePreview
+      activeSection={activeSection}
+      onSectionClick={onSectionClick}
+    />
   );
 }
 

@@ -1,6 +1,6 @@
 /* ── Outer panel shell ── */
 .panel {
-  width: var(--left-panel-width);
+  width: var(--panel-width);
   flex-shrink: 0;
   height: 100%;
   display: flex;
@@ -116,6 +116,33 @@
   color: var(--color-foreground);
   letter-spacing: 0.02em;
   padding: var(--space-2) var(--space-2) var(--space-1) var(--space-2);
+  /* 4px flex gap + 4px margin = 8px to the first row */
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* "+" on the group label row, right-aligned — opens the Add Block panel */
+.treeGroupAddBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+  border-radius: var(--radius-sm);
+  color: var(--color-gray-600);
+  transition: color 120ms ease;
+}
+
+.treeGroupAddBtn {
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.treeGroupAddBtn:hover {
+  color: var(--color-indigo-600);
+  background: var(--color-muted);
 }
 
 /* Section row */
@@ -126,11 +153,16 @@
   padding: 5px 6px 5px 2px;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background 120ms ease;
+  transition: background 120ms ease, padding 140ms ease, box-shadow 140ms ease;
   user-select: none;
 }
 
 .sectionRow:hover { background: var(--color-muted); }
+
+/* Keep the hover state while the Add Block panel was opened from this row
+ * specifically (not from the group label's "+", which shares the same
+ * popover but shouldn't highlight this row). Applied conditionally in JS. */
+.sectionRowForcedHover { background: var(--color-muted); }
 
 .sectionRowActive {
   background: var(--color-indigo-600);
@@ -142,6 +174,13 @@
 }
 
 .sectionRowActive:hover { background: var(--color-indigo-700); }
+
+/* Hover focus — synced with the Store Preview (Primary/10% bg, primary text) */
+.sectionRowFocused {
+  background: rgba(79, 70, 229, 0.10);
+}
+
+.sectionRowFocused .sectionLabel { color: var(--color-indigo-600); }
 
 .chevronBtn {
   display: flex;
@@ -183,6 +222,61 @@
 /* Drag states */
 .sectionRowDragging { opacity: 0.35; }
 
+/* Grouping drag feedback — compatible target expands to signal nesting */
+.sectionRowGroupTarget {
+  background: rgba(79, 70, 229, 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--color-indigo-600);
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* ── Section groups (Reward Calendar / Daily Bonus / Popup) ── */
+.groupContainer {
+  border-radius: var(--radius-md);
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+
+/* Hovering the group header highlights the whole group (nav only) */
+.groupContainer:has(> .groupHeader:hover) {
+  background: rgba(79, 70, 229, 0.05);
+}
+
+.groupContainerTarget {
+  background: rgba(79, 70, 229, 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--color-indigo-600);
+}
+
+.groupChildren {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  margin-left: 17px;
+  padding-left: 3px;
+  border-left: 1px solid var(--color-border);
+}
+
+/* Group children copy the sub-element row colors (blockIcon/blockLabel) */
+.groupChildren .sectionIcon {
+  color: var(--color-gray-400);
+  opacity: 1;
+}
+
+.groupChildren .sectionLabel {
+  color: var(--color-gray-700, #374151);
+}
+
+/* …but active/focused states still win inside groups */
+.groupChildren .sectionRowActive .sectionIcon,
+.groupChildren .sectionRowActive .sectionLabel {
+  color: var(--color-white);
+}
+
+.groupChildren .sectionRowFocused .sectionLabel {
+  color: var(--color-indigo-600);
+}
+
 /* Insertion line shown between sections while dragging */
 .dragDivider {
   height: 2px;
@@ -218,6 +312,52 @@
 .sectionIconHidden { opacity: 0.35; }
 .sectionLabelHidden { opacity: 0.45; }
 
+/* Contextual Group action — appears on compatible rows while a groupable
+ * section is selected. Slot is always reserved so rows never shift. */
+.groupActionSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.groupActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: var(--color-gray-600);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.groupActionBtn:hover {
+  color: var(--color-indigo-600);
+}
+
+.groupActionBtn:active {
+  color: var(--color-indigo-700);
+}
+
+/* Hover affordance variant — hidden until the row is hovered (like eye/delete) */
+.groupActionBtnHoverOnly {
+  opacity: 0;
+  transition: opacity 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.sectionRowHoverable:hover .groupActionBtnHoverOnly { opacity: 1; }
+
+/* Keep the icon visible while its dropdown is open */
+.groupActionBtnHoverOnly[data-state='open'] {
+  opacity: 1;
+  color: var(--color-indigo-600);
+}
+
+.sectionRowActive .groupActionBtn { color: var(--color-white); }
+
 /* Eye toggle button — hidden until row is hovered */
 .eyeBtn {
   display: flex;
@@ -227,12 +367,19 @@
   height: 20px;
   flex-shrink: 0;
   border-radius: 3px;
-  color: var(--color-gray-400);
+  color: var(--color-gray-600);
   opacity: 0;
   transition: opacity 120ms ease, color 120ms ease;
 }
 
-.eyeBtn:hover { color: var(--color-gray-600); }
+.eyeBtn:hover { color: var(--color-indigo-600); }
+
+/* Row action icons follow the row's text color on the active row */
+.sectionRowActive .eyeBtn,
+.sectionRowActive .deleteBtn,
+.sectionRowActive .groupActionBtn {
+  color: var(--color-white);
+}
 
 /* Show eye on row hover, or always when section is hidden */
 .sectionRowHoverable:hover .eyeBtn { opacity: 1; }
@@ -248,7 +395,7 @@
   height: 20px;
   flex-shrink: 0;
   border-radius: 3px;
-  color: var(--color-gray-400);
+  color: var(--color-gray-600);
   opacity: 0;
   transition: opacity 120ms ease, color 120ms ease;
 }
@@ -261,8 +408,8 @@
 .blockList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 8px 0 8px 28px;
+  gap: 2px;
+  padding: 4px 0 4px 28px;
 }
 
 .addBlockBtn {
@@ -285,7 +432,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px var(--space-2);
+  height: 30px;
+  padding: 0 var(--space-2);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: background 120ms ease;
@@ -337,6 +485,35 @@
 }
 
 .addSectionBtn:hover { background: var(--color-indigo-50); }
+
+/* Empty state for the Offers group when all blocks have been removed —
+ * Figma "Pro Blocks / Empty Content" (node 22231-32589) */
+.treeGroupEmptyCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  margin: var(--space-2);
+  padding: 20px 16px;
+  border: 1px dashed var(--color-gray-200);
+  border-radius: var(--radius-lg);
+}
+
+.treeGroupEmptyTitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #171717;
+}
+
+.treeGroupEmptySubtitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+  line-height: 1.4;
+}
 
 /* ── Empty state ── */
 .emptyState {

@@ -67,7 +67,7 @@
 
   /* Layout */
   --top-bar-height:        56px;
-  --left-panel-width:      288px;
+  --panel-width:           300px;
   --icon-size:             16px;
   --btn-size:              36px;
 }
