@@ -111,7 +111,7 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
                       <span className={treeStyles.sectionLabel}>{block.name}</span>
                       <span
                         className="truncate text-xs"
-                        style={{ color: isSelected ? 'rgba(255,255,255,0.75)' : '#a3a3a3' }}
+                        style={{ color: '#a3a3a3' }}
                       >
                         {block.description}
                       </span>
