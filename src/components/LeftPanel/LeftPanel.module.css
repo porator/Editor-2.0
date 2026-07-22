@@ -164,16 +164,26 @@
  * popover but shouldn't highlight this row). Applied conditionally in JS. */
 .sectionRowForcedHover { background: var(--color-muted); }
 
+/* Selected — soft tint (like the canvas-hover-sync state) plus two markers
+ * that hover-sync doesn't have: a solid left bar and a bolder label, so
+ * "selected" and "hover-synced" stay tellable apart. */
 .sectionRowActive {
-  background: var(--color-indigo-600);
-  color: var(--color-white);
+  background: rgba(79, 70, 229, 0.12);
+  box-shadow: inset 3px 0 0 var(--color-indigo-600);
+  color: var(--color-indigo-600);
 }
 
 .sectionRowActive .sectionLabel {
-  color: var(--color-white);
+  color: var(--color-indigo-600);
+  font-weight: var(--font-weight-semibold);
 }
 
-.sectionRowActive:hover { background: var(--color-indigo-700); }
+.sectionRowActive .sectionIcon {
+  color: var(--color-indigo-600);
+  opacity: 1;
+}
+
+.sectionRowActive:hover { background: rgba(79, 70, 229, 0.18); }
 
 /* Hover focus — synced with the Store Preview (Primary/10% bg, primary text) */
 .sectionRowFocused {
@@ -270,7 +280,7 @@
 /* …but active/focused states still win inside groups */
 .groupChildren .sectionRowActive .sectionIcon,
 .groupChildren .sectionRowActive .sectionLabel {
-  color: var(--color-white);
+  color: var(--color-indigo-600);
 }
 
 .groupChildren .sectionRowFocused .sectionLabel {
@@ -309,8 +319,12 @@
   text-overflow: ellipsis;
 }
 
-.sectionIconHidden { opacity: 0.35; }
-.sectionLabelHidden { opacity: 0.45; }
+/* Hidden state — dim with a fixed muted color (not opacity, which compounds
+ * against the white panel and drops text below WCAG AA). gray-500 on white
+ * ≈ 4.83:1, the lightest AA-compliant gray, and reads dimmer than gray-600. */
+.sectionLabelHidden { color: var(--color-gray-500); }
+.sectionIconHidden { color: var(--color-gray-500); }
+.sectionIconHidden .sectionIcon { opacity: 1; }
 
 /* Contextual Group action — appears on compatible rows while a groupable
  * section is selected. Slot is always reserved so rows never shift. */
@@ -356,7 +370,7 @@
   color: var(--color-indigo-600);
 }
 
-.sectionRowActive .groupActionBtn { color: var(--color-white); }
+.sectionRowActive .groupActionBtn { color: var(--color-indigo-600); }
 
 /* Eye toggle button — hidden until row is hovered */
 .eyeBtn {
@@ -378,7 +392,7 @@
 .sectionRowActive .eyeBtn,
 .sectionRowActive .deleteBtn,
 .sectionRowActive .groupActionBtn {
-  color: var(--color-white);
+  color: var(--color-indigo-600);
 }
 
 /* Show eye on row hover, or always when section is hidden */

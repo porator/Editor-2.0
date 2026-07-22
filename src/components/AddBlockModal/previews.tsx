@@ -3,8 +3,8 @@ import Banner from '../StorePreview/sections/Banner';
 import Promotion from '../StorePreview/sections/Promotion';
 import Bundle from '../StorePreview/sections/Bundle';
 import RollingOffer from '../StorePreview/sections/RollingOffer';
-import { Widget } from '../StorePreview/Widgets';
-import { DEFAULT_PREVIEW_STATE, WIDGETS } from '../StorePreview/state';
+import CollectWidget from '../StorePreview/sections/CollectWidget';
+import { DEFAULT_PREVIEW_STATE } from '../StorePreview/state';
 
 /* ── Block previews ──
  * Each block owns its preview. Blocks that exist in the Store Preview
@@ -53,25 +53,23 @@ export function BundlePreview() {
   );
 }
 
-/* Widget-based blocks reuse the exact floating widget from the Store
- * Preview (Figma 157-2853/8/63), centered on the canvas. */
-function WidgetPreview({ widgetId }: { widgetId: string }) {
-  const def = WIDGETS.find((w) => w.id === widgetId)!;
+/* Collect-widget blocks reuse the CollectWidget section (Figma 157-2853/8/63). */
+function CollectWidgetPreview({ id }: { id: string }) {
   return (
-    <div style={{ ...frame, display: 'flex', justifyContent: 'center', padding: '24px 0' }}>
-      <Widget def={def} />
+    <div style={{ ...frame, display: 'flex', justifyContent: 'center' }}>
+      <CollectWidget sectionId={`preview-${id}`} data={dataOf(id)} isVisible />
     </div>
   );
 }
 
 export function RewardCalendarPreview() {
-  return <WidgetPreview widgetId="reward-calendar" />;
+  return <CollectWidgetPreview id="reward-calendar" />;
 }
 
 export function DailyBonusPreview() {
-  return <WidgetPreview widgetId="daily-bonus" />;
+  return <CollectWidgetPreview id="daily-bonus" />;
 }
 
 export function PopupPreview() {
-  return <WidgetPreview widgetId="popup" />;
+  return <CollectWidgetPreview id="popup" />;
 }

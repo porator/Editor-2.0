@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { EditorState } from '../../types/editor';
 import { useWindowWidth } from '../../hooks/useWindowWidth';
 import { SectionFocusProvider } from '../../hooks/useSectionFocus';
+import { GroupingProvider } from '../../hooks/useGrouping';
 import TopNavigation from '../TopNavigation/TopNavigation';
 import LeftPanel from '../LeftPanel/LeftPanel';
 import PreviewWorkspace from '../PreviewWorkspace/PreviewWorkspace';
@@ -26,9 +27,10 @@ export default function EditorShell({ state, onStateChange }: Props) {
   const windowWidth = useWindowWidth();
   const isNarrow = windowWidth <= BREAKPOINT;
 
-  const [drawerOpen, setDrawerOpen]       = useState(true);
-  const [activeLabel, setActiveLabel]     = useState('Header');
-  const [configSection, setConfigSection] = useState<string | null>('header');
+  // First-time: no block selected, config drawer closed
+  const [drawerOpen, setDrawerOpen]       = useState(false);
+  const [, setActiveLabel]                = useState('');
+  const [configSection, setConfigSection] = useState<string | null>(null);
 
   const handleSectionActivate = (id: string, label: string) => {
     setActiveLabel(label);
@@ -43,6 +45,7 @@ export default function EditorShell({ state, onStateChange }: Props) {
 
   return (
     <SectionFocusProvider>
+    <GroupingProvider>
     <div className={styles.shell}>
       <TopNavigation state={state} onStateChange={onStateChange} />
       <div className={styles.body}>
@@ -72,6 +75,7 @@ export default function EditorShell({ state, onStateChange }: Props) {
         )}
       </div>
     </div>
+    </GroupingProvider>
     </SectionFocusProvider>
   );
 }
