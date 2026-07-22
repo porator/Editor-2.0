@@ -1,26 +1,11 @@
 import type { PreviewState } from './types';
 import Header from './sections/Header';
 import Banner from './sections/Banner';
+import CollectWidget from './sections/CollectWidget';
 import Promotion from './sections/Promotion';
 import Bundle from './sections/Bundle';
 import RollingOffer from './sections/RollingOffer';
 import Footer from './sections/Footer';
-
-/* Floating "collect" widgets (Figma 157-2853/8/63) — the storefront
- * representation of the Popup / Reward Calendar / Daily Bonus blocks.
- * Ids match the Sections tree so selection + hover sync just work. */
-export interface WidgetDef {
-  id: string;
-  label: string;
-  icon: string;
-  cta: string;
-}
-
-export const WIDGETS: WidgetDef[] = [
-  { id: 'popup',           label: 'Popup',           icon: '🏺', cta: 'COLLECT' },
-  { id: 'reward-calendar', label: 'Reward Calendar', icon: '🛡️', cta: 'COLLECT' },
-  { id: 'daily-bonus',     label: 'Daily Bonus',     icon: '🧪', cta: 'COLLECT' },
-];
 
 /* Section ids match the Sections tree + config-data ids so selecting a
  * section in the preview opens the matching config drawer. */
@@ -49,6 +34,29 @@ export const DEFAULT_PREVIEW_STATE: PreviewState = {
         title: 'Web Store',
         subtitle: 'Up to 20% Off',
       },
+    },
+    {
+      id: 'reward-calendar',
+      label: 'Reward Calendar',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '🛡️', cta: 'COLLECT' },
+    },
+    /* Registry entries — rendered only when the tree has added them
+     * (see useGrouping order). Popup & Daily Bonus aren't placed by default. */
+    {
+      id: 'popup',
+      label: 'Popup',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '🏺', cta: 'COLLECT' },
+    },
+    {
+      id: 'daily-bonus',
+      label: 'Daily Bonus',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '🧪', cta: 'COLLECT' },
     },
     {
       id: 'promotion',

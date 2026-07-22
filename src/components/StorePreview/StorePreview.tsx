@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { PreviewState, SectionRect } from './types';
-import { DEFAULT_PREVIEW_STATE, WIDGETS } from './state';
+import { DEFAULT_PREVIEW_STATE } from './state';
 import { useFocusState } from '../../hooks/useSectionFocus';
+import { useGrouping } from '../../hooks/useGrouping';
 import PreviewOverlay from './PreviewOverlay';
-import WidgetsLayer from './Widgets';
 
 /* ── StorePreview ──
  * Simulated mobile storefront. Owns layout only: scrolling, section
@@ -33,6 +33,17 @@ const contentStyle: CSSProperties = {
   width: '100%',
 };
 
+/* One shared section boundary for a group — its child widgets lay out
+ * horizontally, wrapping if the width is constrained. */
+const groupSectionStyle: CSSProperties = {
+  padding: '8px 12px',
+  display: 'flex',
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  alignItems: 'flex-start',
+  gap: 8,
+};
+
 /* Resolve the section id from any DOM node inside a section. */
 function sectionIdFromNode(node: EventTarget | null): string | null {
   if (!(node instanceof Element)) return null;
@@ -48,11 +59,50 @@ export default function StorePreview({
   const contentRef = useRef<HTMLDivElement>(null);
   const [rects, setRects] = useState<Record<string, SectionRect>>({});
   const { hoveredSectionId, source, setHoveredSection } = useFocusState();
+  const { order, groups, groupOf } = useGrouping();
+
+  /* All known sections keyed by id (the registry the tree draws from). */
+  const registry = Object.fromEntries(state.sections.map((s) => [s.id, s] as const));
 
   const labels = Object.fromEntries([
-    ...WIDGETS.map((w) => [w.id, w.label] as const),
     ...state.sections.map((s) => [s.id, s.label] as const),
+    ...groups.map((g) => [g.id, g.title] as const),
   ]);
+
+  /* The sections to render, in order: Header, then the Offers the tree
+   * currently has (published `order` — so added blocks land at the bottom),
+   * then Footer. Offers not in the tree aren't rendered. */
+  const orderedSections = [
+    registry['header'],
+    ...order.map((id) => registry[id]),
+    registry['footer'],
+  ].filter((s): s is PreviewState['sections'][number] => Boolean(s));
+
+  /* Render plan: grouped sections collapse into a single group container
+   * (rendered at the first member's position); everything else renders
+   * standalone. Member order follows the group's child order. */
+  const renderPlan = (() => {
+    type Entry =
+      | { kind: 'section'; section: PreviewState['sections'][number] }
+      | { kind: 'group'; id: string; members: PreviewState['sections'] };
+    const done = new Set<string>();
+    const plan: Entry[] = [];
+    for (const section of orderedSections) {
+      if (done.has(section.id)) continue;
+      const grp = groupOf(section.id);
+      if (grp) {
+        const members = grp.childIds
+          .map((cid) => registry[cid])
+          .filter((s): s is PreviewState['sections'][number] => Boolean(s));
+        members.forEach((m) => done.add(m.id));
+        if (members.length) plan.push({ kind: 'group', id: grp.id, members });
+      } else {
+        done.add(section.id);
+        plan.push({ kind: 'section', section });
+      }
+    }
+    return plan;
+  })();
 
   /* Measure each section's bounding box relative to the content wrapper.
    * The overlay lives inside the (relatively positioned) content wrapper,
@@ -113,11 +163,24 @@ export default function StorePreview({
           if (id) onSectionClick?.(id, labels[id] ?? id);
         }}
       >
-        {state.sections.map(({ id, component: Section, data, isVisible }) => (
-          <Section key={id} sectionId={id} data={data} isVisible={isVisible} />
-        ))}
-
-        <WidgetsLayer />
+        {renderPlan.map((entry) => {
+          if (entry.kind === 'section') {
+            const { id, component: Section, data, isVisible } = entry.section;
+            return <Section key={id} sectionId={id} data={data} isVisible={isVisible} />;
+          }
+          return (
+            <section
+              key={entry.id}
+              id={entry.id}
+              data-section-id={entry.id}
+              style={groupSectionStyle}
+            >
+              {entry.members.map(({ id, component: Member, data, isVisible }) => (
+                <Member key={id} sectionId={id} data={data} isVisible={isVisible} bare />
+              ))}
+            </section>
+          );
+        })}
 
         <PreviewOverlay
           rects={rects}

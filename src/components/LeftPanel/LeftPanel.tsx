@@ -5,7 +5,7 @@ import {
   MousePointer2,
   ShoppingBag, Timer, Star,
   CirclePlus, Plus, Eye, EyeOff, GripVertical, Trash2, Folder, Combine, Ungroup,
-  PanelTop, PanelBottom, Square,
+  PanelTop, PanelBottom, Rows2,
 } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
 import { Badge } from '../ds/atoms/Badge';
@@ -17,6 +17,7 @@ import {
   Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
 } from '../ds/composites/Tooltip';
 import { useFocusState } from '../../hooks/useSectionFocus';
+import { useGrouping } from '../../hooks/useGrouping';
 import AddBlockModal from '../AddBlockModal/AddBlockModal';
 import styles from './LeftPanel.module.css';
 
@@ -140,12 +141,16 @@ const MAX_GROUP_SIZE = 3;
 /* Static/dynamic indicator (Cap 7.A.1) — "New" label on Bundle & Promotion only */
 const NEW_BLOCKS = ['bundle', 'promotion'];
 
-/* Row icon by section type: Header/Footer are panels, offer blocks are squares */
+/* First-time default — only these Offers blocks appear in the tree; the rest
+ * (Daily Bonus, Popup) stay available in the Add Block modal until added. */
+const DEFAULT_OFFER_BLOCKS = ['banner', 'bundle', 'promotion', 'rolling-offer', 'reward-calendar'];
+
+/* Row icon by section type: Header/Footer are panels, offer blocks are Rows2 */
 const SECTION_ICONS: Record<string, React.ElementType> = {
   header: PanelTop,
   footer: PanelBottom,
 };
-const sectionIconFor = (id: string): React.ElementType => SECTION_ICONS[id] ?? Square;
+const sectionIconFor = (id: string): React.ElementType => SECTION_ICONS[id] ?? Rows2;
 
 interface SectionGroupItem {
   id: string;
@@ -175,7 +180,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   bottomOverride?: BottomOverride;
   activeSectionId?: string;
 }) {
-  const [activeId, setActiveId] = useState(activeSectionId ?? 'header');
+  // First-time: nothing selected until the user picks a block
+  const [activeId, setActiveId] = useState(activeSectionId ?? '');
 
   useEffect(() => {
     if (activeSectionId) setActiveId(activeSectionId);
@@ -206,11 +212,34 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
 
   // template-group items — flat sections plus section groups (drag to combine)
   const templateGroup = TREE.find((g) => g.id === 'template-group')!;
-  const [items, setItems] = useState<TemplateItem[]>(() => [...templateGroup.sections]);
+  const [items, setItems] = useState<TemplateItem[]>(
+    () => templateGroup.sections.filter((s) => DEFAULT_OFFER_BLOCKS.includes(s.id)),
+  );
   const groupSeq = useRef(1);
+
+  // Publish the current Offers layout (order + groups) so the Store Preview
+  // renders the same blocks, in the same order, with groups side by side.
+  const { publish } = useGrouping();
 
   // deleted sections (template-group only)
   const [deleted, setDeleted] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Flatten items into offer order (group children inline), skipping deleted.
+    const order: string[] = [];
+    const groups: { id: string; title: string; childIds: string[] }[] = [];
+    for (const item of items) {
+      if (isGroupItem(item)) {
+        const childIds = item.children.filter((c) => !deleted.has(c.id)).map((c) => c.id);
+        if (childIds.length === 0) continue;
+        groups.push({ id: item.id, title: item.title, childIds });
+        order.push(...childIds);
+      } else if (!deleted.has(item.id)) {
+        order.push(item.id);
+      }
+    }
+    publish({ order, groups });
+  }, [items, deleted, publish]);
   const deleteSection = (id: string) => {
     setDeleted((prev) => { const next = new Set(prev); next.add(id); return next; });
     // prune deleted children out of groups; unwrap single-child groups, drop empty ones
@@ -553,7 +582,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           </span>
           {opts.actions && (
             <>
-              {GROUPABLE_TYPES.includes(section.id) && !findGroupOf(section.id) && (
+              {GROUPABLE_TYPES.includes(section.id) && !findGroupOf(section.id) && groupTargetsFor(section.id).length > 0 && (
                 <span className={styles.groupActionSlot}>
                   {/* Group dropdown (Figma 153-3958) — lists compatible targets */}
                   <DropdownMenu>

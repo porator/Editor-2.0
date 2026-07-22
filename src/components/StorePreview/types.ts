@@ -7,6 +7,9 @@ export interface PreviewSectionProps<T = unknown> {
   sectionId: string;
   data: T;
   isVisible: boolean;
+  /* Rendered inside a group container — omit the section's own wrapper/padding
+   * so the group provides the single shared section boundary. */
+  bare?: boolean;
 }
 
 /* One entry in the preview's section list. Order in the array is render order. */
