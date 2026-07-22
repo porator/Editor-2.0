@@ -310,7 +310,7 @@
 
 .sectionLabel {
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--font-weight-regular);
   color: var(--color-gray-600);
   flex: 1;
@@ -472,13 +472,13 @@
 
 .blockLabel {
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--color-gray-700, #374151);
 }
 
 .blockSubtitle {
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--color-gray-400);
   font-style: italic;
 }
