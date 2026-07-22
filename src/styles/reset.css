@@ -33,3 +33,35 @@
     line-height: 1;
   }
 }
+
+/* ─── Skeleton (design-system loading placeholder) ─── */
+:root {
+  --color-skeleton:            #e0e0e5;
+  --color-skeleton-highlight:  #f1f1f5;
+}
+
+@keyframes ac-skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.ac-skeleton {
+  background-color: var(--color-skeleton);
+}
+
+.ac-skeleton--shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-skeleton) 0%,
+    var(--color-skeleton-highlight) 50%,
+    var(--color-skeleton) 100%
+  );
+  background-size: 200% 100%;
+  animation: ac-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-skeleton--shimmer {
+    animation: none;
+  }
+}

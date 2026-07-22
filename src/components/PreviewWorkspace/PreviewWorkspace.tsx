@@ -3,6 +3,8 @@ import { PanelTop } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
 import WhiteLabelStoreRenderer from '../WhiteLabelPreview/WhiteLabelPreview';
 import StorePreview from '../StorePreview/StorePreview';
+import PreviewSkeleton from './PreviewSkeleton';
+import { useFirstOpen } from '../../hooks/useFirstOpen';
 import styles from './PreviewWorkspace.module.css';
 
 const IMG_W = 1600;
@@ -118,6 +120,9 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
+  // First-time users see a design-system skeleton while the store "loads".
+  const loading = useFirstOpen();
+
   useEffect(() => {
     const el = canvasRef.current;
     if (!el) return;
@@ -127,6 +132,16 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+
+  if (loading) {
+    return (
+      <div className={styles.workspace}>
+        <div className={styles.skeletonWrap}>
+          <PreviewSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.workspace}>
