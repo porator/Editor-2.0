@@ -18,7 +18,9 @@ import {
 } from '../ds/composites/Tooltip';
 import { useFocusState } from '../../hooks/useSectionFocus';
 import { useGrouping } from '../../hooks/useGrouping';
+import { useFirstOpen } from '../../hooks/useFirstOpen';
 import AddBlockModal from '../AddBlockModal/AddBlockModal';
+import BlockTreeSkeleton from './BlockTreeSkeleton';
 import styles from './LeftPanel.module.css';
 
 export interface BottomOverride {
@@ -180,6 +182,9 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   bottomOverride?: BottomOverride;
   activeSectionId?: string;
 }) {
+  // First-time users see the animated block-tree skeleton for 3s.
+  const loading = useFirstOpen(3000);
+
   // First-time: nothing selected until the user picks a block
   const [activeId, setActiveId] = useState(activeSectionId ?? '');
 
@@ -812,7 +817,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         <div className={styles.cardHeader}>
           <span className={styles.cardTitle}>Blocks</span>
         </div>
-        <div className={styles.cardBody}>{topContent}</div>
+        <div className={styles.cardBody}>{loading ? <BlockTreeSkeleton /> : topContent}</div>
       </div>
 
       {/* Settings card — only visible in narrow mode when a section is active */}

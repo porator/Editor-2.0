@@ -615,3 +615,48 @@
 }
 
 .brandUploadBtn:hover { background: var(--color-indigo-50); }
+
+/* ═══════════════════════════════════════
+   First-open block-tree skeleton
+   ═══════════════════════════════════════ */
+.skelTree {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-2);
+  animation: leftSkelFadeIn 0.2s ease-out;
+}
+
+.skelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.skelGroup:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.skelGroupLabel {
+  padding: var(--space-2) var(--space-2) var(--space-1) var(--space-2);
+  margin-bottom: 4px;
+}
+
+.skelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px 5px 2px;
+}
+
+.skelRowChild {
+  padding-left: 24px;
+}
+
+@keyframes leftSkelFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
