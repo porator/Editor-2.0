@@ -120,8 +120,8 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
-  // First-time users see a design-system skeleton while the store "loads".
-  const loading = useFirstOpen();
+  // First-time users see the animated design-system skeleton for 3s.
+  const loading = useFirstOpen(3000);
 
   useEffect(() => {
     const el = canvasRef.current;
