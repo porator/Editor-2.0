@@ -240,6 +240,14 @@
   padding-bottom: 10px;
 }
 
+/* Group-menu preview — hovering a "Group with …" item rings the target row
+ * so it's clear what will be grouped. Same ring as the drag target, minus
+ * the padding jump (no layout shift while scanning a menu). */
+.sectionRowGroupPreview {
+  background: rgba(79, 70, 229, 0.08);
+  box-shadow: inset 0 0 0 1.5px var(--color-indigo-600);
+}
+
 /* ── Section groups (Reward Calendar / Daily Bonus / Popup) ── */
 .groupContainer {
   border-radius: var(--radius-md);
@@ -319,12 +327,16 @@
   text-overflow: ellipsis;
 }
 
-/* Hidden state — dim with a fixed muted color (not opacity, which compounds
- * against the white panel and drops text below WCAG AA). gray-500 on white
- * ≈ 4.83:1, the lightest AA-compliant gray, and reads dimmer than gray-600. */
-.sectionLabelHidden { color: var(--color-gray-500); }
-.sectionIconHidden { color: var(--color-gray-500); }
-.sectionIconHidden .sectionIcon { opacity: 1; }
+/* Hidden state — per design spec, dim via opacity: icon .35, label .45.
+ * Note: label at .45 on the white panel falls below WCAG AA contrast;
+ * accepted as an intentional design decision for the hidden affordance. */
+.sectionLabelHidden { opacity: 0.45; }
+.sectionIconHidden { opacity: 0.35; }
+
+/* Child blocks inherit the parent section's hidden dimming, so a hidden
+ * section reads as hidden all the way down. Same opacities as above. */
+.blockLabelHidden { opacity: 0.45; }
+.blockIconHidden { opacity: 0.35; }
 
 /* Contextual Group action — appears on compatible rows while a groupable
  * section is selected. Slot is always reserved so rows never shift. */

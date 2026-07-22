@@ -310,6 +310,10 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [dragMode, setDragMode] = useState<'reorder' | 'group'>('reorder');
 
+  /* Section ids to highlight while a "Group with …" / "Add to …" menu item
+   * is hovered, so it's clear which block(s) the action targets. */
+  const [groupPreviewIds, setGroupPreviewIds] = useState<string[]>([]);
+
   const resetDrag = () => { setDragId(null); setDragOver(null); setDragMode('reorder'); };
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -541,12 +545,13 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     const isDragging = dragId === section.id;
     const isFocused  = hoveredSectionId === section.id && !isActive;
     const isGroupTarget = dragOver === section.id && dragMode === 'group' && !isDragging;
+    const isGroupPreview = groupPreviewIds.includes(section.id);
 
     return (
       <div key={section.id}>
         <div
           data-section-id={section.id}
-          className={`${styles.sectionRow} ${isActive ? styles.sectionRowActive : ''} ${isFocused ? styles.sectionRowFocused : ''} ${isGroupTarget ? styles.sectionRowGroupTarget : ''} ${opts.draggable ? styles.sectionRowHoverable : ''} ${isDragging ? styles.sectionRowDragging : ''}`}
+          className={`${styles.sectionRow} ${isActive ? styles.sectionRowActive : ''} ${isFocused ? styles.sectionRowFocused : ''} ${isGroupTarget ? styles.sectionRowGroupTarget : ''} ${isGroupPreview ? styles.sectionRowGroupPreview : ''} ${opts.draggable ? styles.sectionRowHoverable : ''} ${isDragging ? styles.sectionRowDragging : ''}`}
           onMouseEnter={() => setHoveredSection(section.id, 'drawer')}
           onMouseLeave={() => setHoveredSection(null)}
           onClick={() => {
@@ -590,7 +595,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
               {GROUPABLE_TYPES.includes(section.id) && !findGroupOf(section.id) && groupTargetsFor(section.id).length > 0 && (
                 <span className={styles.groupActionSlot}>
                   {/* Group dropdown (Figma 153-3958) — lists compatible targets */}
-                  <DropdownMenu>
+                  <DropdownMenu onOpenChange={(open) => { if (!open) setGroupPreviewIds([]); }}>
                     <DropdownMenuTrigger asChild>
                       <button
                         className={`${styles.groupActionBtn} ${styles.groupActionBtnHoverOnly}`}
@@ -605,7 +610,13 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                       {groupTargetsFor(section.id).map((target) => (
                         <DropdownMenuItem
                           key={target.id}
+                          className="text-xs"
                           onClick={(e) => { e.stopPropagation(); combine(section.id, target); }}
+                          /* Highlight the target row/group so the user sees
+                           * what this action will group with. */
+                          onMouseEnter={() => setGroupPreviewIds([target.id])}
+                          onFocus={() => setGroupPreviewIds([target.id])}
+                          onMouseLeave={() => setGroupPreviewIds([])}
                         >
                           {isGroupItem(target) ? `Add to ${target.title}` : `Group with ${target.label}`}
                         </DropdownMenuItem>
@@ -613,12 +624,18 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                       {(() => {
                         const looseTargets = groupTargetsFor(section.id).filter((t) => !isGroupItem(t));
                         if (looseTargets.length < 2) return null;
+                        const looseIds = looseTargets.map((t) => t.id);
                         return (
                           <DropdownMenuItem
+                            className="text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
-                              combineAll(section.id, looseTargets.map((t) => t.id));
+                              combineAll(section.id, looseIds);
                             }}
+                            /* "Group with all" → highlight every loose target. */
+                            onMouseEnter={() => setGroupPreviewIds(looseIds)}
+                            onFocus={() => setGroupPreviewIds(looseIds)}
+                            onMouseLeave={() => setGroupPreviewIds([])}
                           >
                             Group with all
                           </DropdownMenuItem>
@@ -658,10 +675,10 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                   onSectionActivate?.(block.id, block.label);
                 }}
               >
-                <block.icon size={14} strokeWidth={1.75} className={styles.blockIcon} />
-                <span className={styles.blockLabel}>{block.label}</span>
+                <block.icon size={14} strokeWidth={1.75} className={`${styles.blockIcon} ${isHidden ? styles.blockIconHidden : ''}`} />
+                <span className={`${styles.blockLabel} ${isHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
                 {block.subtitle && (
-                  <span className={styles.blockSubtitle}>– {block.subtitle}</span>
+                  <span className={`${styles.blockSubtitle} ${isHidden ? styles.blockLabelHidden : ''}`}>– {block.subtitle}</span>
                 )}
               </div>
             ))}
@@ -676,7 +693,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     const isOpen     = groupOpen.has(item.id);
     const isActive   = activeId === item.id;
     const isDragging = dragId === item.id;
-    const isGroupTarget = dragOver === item.id && dragMode === 'group' && !isDragging;
+    const isGroupTarget = (dragOver === item.id && dragMode === 'group' && !isDragging)
+      || groupPreviewIds.includes(item.id);
 
     return (
       <div className={`${styles.groupContainer} ${isGroupTarget ? styles.groupContainerTarget : ''}`}>

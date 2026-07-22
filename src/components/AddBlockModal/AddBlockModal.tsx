@@ -95,6 +95,10 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
               )}
               {available.map((block) => {
                 const isSelected = block.id === selectedId;
+                /* Unify hover + selected into one highlighted state: the row
+                 * under the cursor takes the active treatment, falling back to
+                 * the keyboard selection when nothing is hovered. */
+                const isActive = block.id === previewed?.id;
                 return (
                   <div
                     key={block.id}
@@ -104,14 +108,14 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
                     onClick={() => insert(block.id)}
                     onMouseEnter={() => setHoveredId(block.id)}
                     onMouseLeave={() => setHoveredId(null)}
-                    className={`${treeStyles.sectionRow} ${isSelected ? treeStyles.sectionRowActive : ''}`}
+                    className={`${treeStyles.sectionRow} ${isActive ? treeStyles.sectionRowActive : ''}`}
                     style={{ paddingLeft: 20, paddingRight: 8, paddingTop: 8, paddingBottom: 8, height: 'auto', alignItems: 'flex-start', gap: 6 }}
                   >
-                    <span className="flex min-w-0 flex-col">
+                    <span className="flex min-w-0 flex-col" style={{ gap: 2 }}>
                       <span className={treeStyles.sectionLabel}>{block.name}</span>
                       <span
                         className="truncate text-xs"
-                        style={{ color: '#a3a3a3' }}
+                        style={{ color: 'var(--color-muted-fg)' }}
                       >
                         {block.description}
                       </span>
