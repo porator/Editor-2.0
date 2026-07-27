@@ -166,7 +166,11 @@ const TREE: SectionGroup[] = [
       {
         id: 'footer',
         label: 'Footer',
-        blocks: [],
+        blocks: [
+          /* Branding asset with no config surface of its own — hide/show
+           * only, same treatment as Header's Logo. */
+          { id: 'footer-appcharge-logo', label: 'Appcharge Logo', icon: Image, toggleOnly: true },
+        ],
       },
     ],
   },
@@ -752,13 +756,12 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                           </button>
                         </DropdownMenuTrigger>
                       </TooltipTrigger>
-                      <TooltipContent side="top" sideOffset={6}>Group</TooltipContent>
+                      <TooltipContent side="top" sideOffset={6}>Group blocks side by</TooltipContent>
                     </Tooltip>
                     <DropdownMenuContent align="start">
                       {groupTargetsFor(section.id).map((target) => (
                         <DropdownMenuItem
                           key={target.id}
-                          className="text-xs"
                           onClick={(e) => { e.stopPropagation(); combine(section.id, target); }}
                           /* Highlight the target row/group so the user sees
                            * what this action will group with. */
@@ -775,7 +778,6 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                         const looseIds = looseTargets.map((t) => t.id);
                         return (
                           <DropdownMenuItem
-                            className="text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
                               combineAll(section.id, looseIds);
@@ -963,7 +965,14 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         const isOfferListEmpty = group.id === 'template-group'
           && items.filter((item) => isGroupItem(item) || !deleted.has(item.id)).length === 0;
         return (
-        <div key={group.id} className={styles.treeGroup}>
+        /* Only Offer Blocks accepts drops. Marking the zone lets the drag
+         * engine return "nowhere" outside it, instead of falling back to the
+         * nearest row and implying Header/Footer are valid targets. */
+        <div
+          key={group.id}
+          className={styles.treeGroup}
+          data-drop-zone={group.id === 'template-group' ? '' : undefined}
+        >
           <p className={styles.treeGroupLabel}>
             {group.label}
             {group.id === 'template-group' && (
@@ -990,9 +999,9 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                 if (visibleItems.length === 0) {
                   return (
                     <div className={styles.treeGroupEmptyCard}>
-                      <p className={styles.treeGroupEmptyTitle}>No offers added</p>
+                      <p className={styles.treeGroupEmptyTitle}>No Offers Added</p>
                       <p className={styles.treeGroupEmptySubtitle}>
-                        Add a block to start building your offer.
+                        Add a block to start building your webstore.
                       </p>
                       <button
                         className={styles.treeGroupEmptyAddBtn}
@@ -1050,7 +1059,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
       {/* Sections card — fills all available space */}
       <div className={styles.card} style={{ flex: bottomOverride ? '0 0 55%' : '1 1 0' }}>
         <div className={styles.cardHeader}>
-          <span className={styles.cardTitle}>Blocks</span>
+          <span className={styles.cardTitle}>Webstore Blocks</span>
         </div>
         <div className={styles.cardBody}>{loading ? <BlockTreeSkeleton /> : topContent}</div>
       </div>

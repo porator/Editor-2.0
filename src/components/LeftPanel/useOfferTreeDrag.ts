@@ -160,6 +160,27 @@ export function useOfferTreeDrag(opts: Options) {
     const o = optsRef.current;
     const draggedId = dragIdRef.current;
     if (!draggedId) return null;
+
+    /* Outside the drop zone there is no valid destination, so resolve to
+     * nothing rather than snapping to the nearest row — otherwise hovering
+     * Header/Footer would open a slot in Offer Blocks and imply the block
+     * can land somewhere it can't. Measured with the gap collapsed (the gap
+     * lives inside the zone and would otherwise inflate its height). */
+    const rootEl = o.scrollContainerRef.current;
+    const dropZoneEl = rootEl?.querySelector<HTMLElement>('[data-drop-zone]');
+    if (dropZoneEl && rootEl) {
+      const gaps = Array.from(rootEl.querySelectorAll<HTMLElement>('[data-drag-gap]'));
+      const saved = gaps.map((el) => el.style.display);
+      gaps.forEach((el) => { el.style.display = 'none'; });
+      const zr = dropZoneEl.getBoundingClientRect();
+      gaps.forEach((el, i) => { el.style.display = saved[i]; });
+      if (y < zr.top || y > zr.bottom) {
+        clearExpandTimer();
+        zoneMemo.current = null;
+        return null;
+      }
+    }
+
     const rootItems = o.getItems();
     const rootIds = rootItems.map((i) => i.id).filter((id) => id !== draggedId);
 
@@ -318,6 +339,9 @@ export function useOfferTreeDrag(opts: Options) {
       captureFlip();
       targetRef.current = next;
       setTarget(next);
+      /* The floating layer is pointer-events:none, so the cursor comes from
+       * whatever is underneath — force it here to signal droppable vs not. */
+      document.body.style.cursor = next ? 'grabbing' : 'no-drop';
     }
     rafId.current = requestAnimationFrame(tick);
   };
@@ -328,6 +352,9 @@ export function useOfferTreeDrag(opts: Options) {
     window.removeEventListener('keydown', handleKeyDown);
     if (rafId.current !== null) { cancelAnimationFrame(rafId.current); rafId.current = null; }
     clearExpandTimer();
+    document.body.style.cursor = '';
+    /* No resolved target means the pointer was over an invalid destination,
+     * so a release there is a no-op rather than a snap-to-nearest drop. */
     const shouldCommit = commit && draggingRef.current && dragIdRef.current && targetRef.current;
     // Capture before the layout collapses so the settle animates too.
     if (draggingRef.current) captureFlip();

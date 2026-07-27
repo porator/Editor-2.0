@@ -362,6 +362,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* Same descender clip as .blockLabel — reset.css's `p, span {
+   * line-height: 1 }` leaves a 12px label no room for g/p/y tails, and
+   * `overflow: hidden` slices them off. Fits inside the row's existing
+   * content height, so row rhythm is unchanged. */
+  line-height: 16px;
 }
 
 /* Hidden state — per design spec, dim via opacity: icon .35, label .45.
@@ -523,9 +528,17 @@
   font-size: var(--text-xs);
   color: var(--color-gray-700, #374151);
   flex: 1;
+  /* Flex items floor at their content width unless this is zeroed, which
+   * would stop the ellipsis below from ever engaging on a long label. */
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* reset.css sets `p, span { line-height: 1 }`, so a 12px label gets a 12px
+   * line box — no room for descenders, and `overflow: hidden` then slices the
+   * tails off g/p/y. Matching the row's 14px icon gives them room while
+   * keeping the row at its 24px height. */
+  line-height: 14px;
 }
 
 /* Display-only leaf (e.g. Header's Logo/Player ID/Player Name) — hide/show
