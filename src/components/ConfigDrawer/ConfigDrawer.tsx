@@ -20,6 +20,7 @@ import {
 import type {
   Control, ConfigRow, SubNode, CssTag, Availability,
 } from './config-data';
+import { isNewBlock, NewBadge } from '../LeftPanel/NewBadge';
 import styles from './ConfigDrawer.module.css';
 
 /* ── Tag + status color tokens ── */
@@ -344,7 +345,10 @@ export default function ConfigDrawer({ sectionId, onBack }: Props) {
         >
           <ChevronLeft size={16} strokeWidth={2} />
         </button>
-        <span className={styles.title}>{title}</span>
+        <span className={styles.title}>
+          {title}
+          {isNewBlock(sectionId) && <NewBadge />}
+        </span>
         <button className={styles.menuBtn} aria-label="More options">
           <MoreHorizontal size={16} strokeWidth={1.75} />
         </button>

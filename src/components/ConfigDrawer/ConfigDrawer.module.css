@@ -2,7 +2,9 @@
 .drawer {
   display: flex;
   flex-direction: column;
-  width: var(--panel-width);
+  /* Fixed 300px, decoupled from --panel-width (245) so the config drawer can
+   * be wider than the left panel. */
+  width: 300px;
   flex-shrink: 0;
   height: calc(100% - 20px);
   min-height: 0;
@@ -119,15 +121,18 @@
   gap: 8px;
 }
 
+/* Group heading inside the drawer — matched to the block panel's
+ * .treeGroupLabel (12px semibold, 0.02em) so both share one type scale. */
 .rowName {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
   color: var(--color-foreground);
-  line-height: 1.2;
+  line-height: 16px;
 }
 
 .lockIcon {
@@ -248,12 +253,15 @@
   gap: 8px;
 }
 
+/* Field label — matched to the block panel's .sectionLabel (12px regular,
+ * gray-600). line-height 16px rather than 1: `overflow: hidden` below would
+ * otherwise clip the descenders off g/p/y at this size. */
 .controlLabel {
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--font-weight-regular);
   color: var(--color-gray-600);
-  line-height: 1;
+  line-height: 16px;
   flex: 1;
   min-width: 0;
   white-space: nowrap;

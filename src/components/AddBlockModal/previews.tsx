@@ -83,6 +83,10 @@ export function PopupPreview() {
   return <CollectWidgetPreview id="popup" />;
 }
 
+export function AddToHomeScreenPreview() {
+  return <CollectWidgetPreview id="add-to-home-screen" />;
+}
+
 export function CustomBlock1Preview() {
   return <CollectWidgetPreview id="custom-block-1" />;
 }

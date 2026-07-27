@@ -154,6 +154,13 @@ export const DEFAULT_PREVIEW_STATE: PreviewState = {
         ],
       },
     },
+    {
+      id: 'add-to-home-screen',
+      label: 'Add to Home Screen',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '📲', cta: 'ADD' },
+    },
     /* Custom Block 1-5 — generic placeholder slots (Add Offer modal), reuse
      * CollectWidget like the other registry-only blocks above. */
     {

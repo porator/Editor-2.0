@@ -1,11 +1,12 @@
 import type { ReactNode, ComponentType } from 'react';
 import {
   Image, Package, Megaphone, Ticket, Calendar, Gift, MessageSquare, Blocks,
-  BarChart3,
+  BarChart3, Smartphone,
 } from 'lucide-react';
 import {
   BannerPreview, BundlePreview, PromotionPreview, RollingOfferPreview,
   RewardCalendarPreview, DailyBonusPreview, PopupPreview, ProgressBarPreview,
+  AddToHomeScreenPreview,
   CustomBlock1Preview, CustomBlock2Preview, CustomBlock3Preview,
   CustomBlock4Preview, CustomBlock5Preview,
 } from './previews';
@@ -31,7 +32,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'progress-bar',
     name: 'Progress Bar',
     icon: <BarChart3 size={16} strokeWidth={1.75} />,
-    category: 'Promotions',
+    category: 'Retention',
     description: 'Goal progress with milestones',
     preview: ProgressBarPreview,
     keywords: ['progress', 'milestone', 'battle pass', 'goal', 'tier'],
@@ -40,7 +41,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'banner',
     name: 'Banner',
     icon: <Image size={16} strokeWidth={1.75} />,
-    category: 'Promotions',
+    category: 'Custom',
     description: 'Promotional artwork strip',
     preview: BannerPreview,
     keywords: ['hero', 'artwork', 'image', 'campaign'],
@@ -49,7 +50,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'promotion',
     name: 'Promotion',
     icon: <Megaphone size={16} strokeWidth={1.75} />,
-    category: 'Promotions',
+    category: 'Monetization',
     description: 'Large promotional offer',
     preview: PromotionPreview,
     keywords: ['sale', 'offer', 'discount', 'welcome'],
@@ -59,7 +60,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'bundle',
     name: 'Bundle',
     icon: <Package size={16} strokeWidth={1.75} />,
-    category: 'Promotions',
+    category: 'Monetization',
     description: 'Multi-item purchase bundle',
     preview: BundlePreview,
     keywords: ['pack', 'items', 'products', 'combo'],
@@ -69,7 +70,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'rolling-offer',
     name: 'Rolling Offer',
     icon: <Ticket size={16} strokeWidth={1.75} />,
-    category: 'Promotions',
+    category: 'Monetization',
     description: 'Carousel of rotating offers',
     preview: RollingOfferPreview,
     keywords: ['carousel', 'timer', 'rotating', 'limited'],
@@ -78,7 +79,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'reward-calendar',
     name: 'Reward Calendar',
     icon: <Calendar size={16} strokeWidth={1.75} />,
-    category: 'Rewards',
+    category: 'Retention',
     description: 'Daily login rewards',
     preview: RewardCalendarPreview,
     keywords: ['daily', 'login', 'streak', 'calendar'],
@@ -87,16 +88,25 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'daily-bonus',
     name: 'Daily Bonus',
     icon: <Gift size={16} strokeWidth={1.75} />,
-    category: 'Rewards',
+    category: 'Retention',
     description: 'Free daily claimable bonus',
     preview: DailyBonusPreview,
     keywords: ['free', 'claim', 'gift', 'daily'],
   },
   {
+    id: 'add-to-home-screen',
+    name: 'Add to Home Screen',
+    icon: <Smartphone size={16} strokeWidth={1.75} />,
+    category: 'Retention',
+    description: 'Prompt to install the web store',
+    preview: AddToHomeScreenPreview,
+    keywords: ['pwa', 'install', 'home screen', 'shortcut', 'a2hs'],
+  },
+  {
     id: 'popup',
-    name: 'Popup',
+    name: 'Triggered Popup',
     icon: <MessageSquare size={16} strokeWidth={1.75} />,
-    category: 'Utility',
+    category: 'Monetization',
     description: 'Triggered overlay message',
     preview: PopupPreview,
     keywords: ['modal', 'overlay', 'announcement', 'triggered'],
@@ -147,6 +157,10 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     keywords: ['custom', 'blank', 'placeholder'],
   },
 ];
+
+/* Section order in the Add Offer modal. Any category not listed here still
+ * renders, appended after these, so a new one can't silently vanish. */
+export const CATEGORY_ORDER = ['Retention', 'Monetization', 'Custom'] as const;
 
 export const BLOCK_CATEGORIES: string[] = [
   'All',

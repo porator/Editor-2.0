@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Popover, PopoverTrigger, PopoverAnchor, PopoverContent } from '../ds/composites/Popover';
 import { ScrollArea } from '../ds/composites/ScrollArea';
-import { BLOCK_REGISTRY } from './registry';
+import { BLOCK_REGISTRY, CATEGORY_ORDER } from './registry';
 /* Rows reuse the Sections drawer's classes so UI + states stay identical */
 import treeStyles from '../LeftPanel/LeftPanel.module.css';
 
@@ -20,13 +20,27 @@ interface Props {
   /* Optional element to anchor to instead of the trigger (e.g. the group
    * label's "+" button), so the panel opens level with what was pressed. */
   anchorEl?: HTMLElement | null;
-  /* Block ids already in use — each block type can only be added once, so
-   * these are hidden from the list rather than shown as re-selectable. */
+  /* Block ids already in the tree. Each type can only be added once, so these
+   * render disabled rather than disappearing — the modal is a library of every
+   * offer type, and a vanishing row reads as a bug or a stray filter. */
   usedIds?: Set<string>;
 }
 
 export default function AddBlockModal({ open, onOpenChange, onInsert, children, anchorEl, usedIds }: Props) {
-  const available = BLOCK_REGISTRY.filter((b) => !usedIds?.has(b.id));
+  const isUsed = (id: string) => !!usedIds?.has(id);
+  /* Still addable — drives selection, keyboard nav and the default preview. */
+  const available = BLOCK_REGISTRY.filter((b) => !isUsed(b.id));
+
+  /* Every category renders, in CATEGORY_ORDER; anything with an unlisted
+   * category is appended rather than silently dropped. */
+  const sections = (() => {
+    const seen = new Set<string>(CATEGORY_ORDER);
+    const extra = BLOCK_REGISTRY.map((b) => b.category).filter((c) => !seen.has(c));
+    const order = [...CATEGORY_ORDER, ...Array.from(new Set(extra))];
+    return order
+      .map((category) => ({ category, blocks: BLOCK_REGISTRY.filter((b) => b.category === category) }))
+      .filter((s) => s.blocks.length > 0);
+  })();
 
   const [selectedId, setSelectedId] = useState<string | null>(available[0]?.id ?? null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -40,13 +54,14 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
   }, [open]);
 
   const selected = available.find((b) => b.id === selectedId) ?? null;
-  /* Preview follows the hovered row; falls back to the selection. */
-  const previewed = available.find((b) => b.id === hoveredId) ?? selected;
+  /* Preview follows the hovered row — including disabled ones, so users can
+   * still inspect what an already-added offer looks like. */
+  const previewed = BLOCK_REGISTRY.find((b) => b.id === hoveredId) ?? selected;
   const Preview = previewed?.preview;
 
   const insert = (id?: string) => {
     const blockId = id ?? selected?.id;
-    if (!blockId) return;
+    if (!blockId || isUsed(blockId)) return;
     onInsert(blockId);
     onOpenChange(false);
   };
@@ -54,6 +69,7 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
+      // Arrow keys walk only the addable rows, skipping disabled ones.
       if (!available.length) return;
       const idx = available.findIndex((b) => b.id === selectedId);
       const next = e.key === 'ArrowDown'
@@ -95,42 +111,67 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
            * Radix sets `display: table` via inline style, which beats a
            * plain class selector — needs `!important` to actually win. */}
           <ScrollArea className="w-[254px] shrink-0 bg-white [&_[data-radix-scroll-area-viewport]>div]:!block">
-            <div className="space-y-0.5 p-4" role="listbox" aria-label="Available blocks">
-              {available.length === 0 && (
-                <p className="px-2 py-4 text-center text-sm text-[#a3a3a3]">
-                  All blocks have been added.
-                </p>
-              )}
-              {available.map((block) => {
-                const isSelected = block.id === selectedId;
-                /* Unify hover + selected into one highlighted state: the row
-                 * under the cursor takes the active treatment, falling back to
-                 * the keyboard selection when nothing is hovered. */
-                const isActive = block.id === previewed?.id;
-                return (
+            <div className="p-4 pr-5" role="listbox" aria-label="Available blocks">
+              {sections.map((section) => (
+                <div key={section.category} className="mb-3 last:mb-0">
                   <div
-                    key={block.id}
-                    role="option"
-                    aria-selected={isSelected}
-                    data-block-id={block.id}
-                    onClick={() => insert(block.id)}
-                    onMouseEnter={() => setHoveredId(block.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                    className={`${treeStyles.sectionRow} ${isActive ? treeStyles.sectionRowActive : ''}`}
-                    style={{ paddingLeft: 20, paddingRight: 8, paddingTop: 8, paddingBottom: 8, height: 'auto', alignItems: 'flex-start', gap: 6 }}
+                    role="presentation"
+                    className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.06em]"
+                    style={{ color: 'var(--color-foreground)' }}
                   >
-                    <span className="flex min-w-0 flex-col" style={{ gap: 2 }}>
-                      <span className={treeStyles.sectionLabel}>{block.name}</span>
-                      <span
-                        className="truncate text-xs"
-                        style={{ color: 'var(--color-muted-fg)' }}
-                      >
-                        {block.description}
-                      </span>
-                    </span>
+                    {section.category}
                   </div>
-                );
-              })}
+                  <div className="space-y-0.5">
+                    {section.blocks.map((block) => {
+                      const used = isUsed(block.id);
+                      const isSelected = block.id === selectedId;
+                      /* Unify hover + selected into one highlighted state: the
+                       * row under the cursor takes the active treatment,
+                       * falling back to the keyboard selection. A disabled row
+                       * never takes it — that would read as addable. */
+                      const isActive = !used && block.id === previewed?.id;
+                      return (
+                        <div
+                          key={block.id}
+                          role="option"
+                          aria-selected={isSelected && !used}
+                          aria-disabled={used}
+                          data-block-id={block.id}
+                          data-disabled={used ? '' : undefined}
+                          onClick={used ? undefined : () => insert(block.id)}
+                          onMouseEnter={() => setHoveredId(block.id)}
+                          onMouseLeave={() => setHoveredId(null)}
+                          draggable={false}
+                          className={`${treeStyles.sectionRow} ${isActive ? treeStyles.sectionRowActive : ''}`}
+                          style={{
+                            paddingLeft: 20, paddingRight: 8, paddingTop: 8, paddingBottom: 8,
+                            height: 'auto', alignItems: 'flex-start', gap: 6,
+                            ...(used ? { opacity: 0.45, cursor: 'not-allowed' } : null),
+                          }}
+                        >
+                          <span className="flex min-w-0 flex-1 flex-col" style={{ gap: 2 }}>
+                            <span className={treeStyles.sectionLabel}>{block.name}</span>
+                            <span
+                              className="truncate text-xs"
+                              style={{ color: 'var(--color-muted-fg)' }}
+                            >
+                              {block.description}
+                            </span>
+                          </span>
+                          {used && (
+                            <span
+                              className="shrink-0 whitespace-nowrap text-[10px] font-medium"
+                              style={{ color: 'var(--color-gray-400)', lineHeight: '16px' }}
+                            >
+                              Already added
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </ScrollArea>
 

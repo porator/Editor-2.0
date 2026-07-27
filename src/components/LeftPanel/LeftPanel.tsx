@@ -8,7 +8,6 @@ import {
   PanelTop, PanelBottom, Rows2,
 } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
-import { Badge } from '../ds/atoms/Badge';
 import {
   DropdownMenu, DropdownMenuTrigger,
   DropdownMenuContent, DropdownMenuItem,
@@ -19,15 +18,20 @@ import {
 import { useFocusState } from '../../hooks/useSectionFocus';
 import { useGrouping } from '../../hooks/useGrouping';
 import { useFirstOpen } from '../../hooks/useFirstOpen';
+import { useResizableDrawer } from '../../hooks/useResizableDrawer';
+import { useResizableStack } from '../../hooks/useResizableStack';
 import AddBlockModal from '../AddBlockModal/AddBlockModal';
 import BlockTreeSkeleton from './BlockTreeSkeleton';
 import { useOfferTreeDrag, type DropTarget } from './useOfferTreeDrag';
+import { NEW_BLOCKS, NewBadge } from './NewBadge';
 import styles from './LeftPanel.module.css';
 
 export interface BottomOverride {
   title: string;
   content: React.ReactNode;
   onClose: () => void;
+  /* Show the "New" badge beside the drawer title (Bundle / Promotion). */
+  isNew?: boolean;
 }
 
 interface Props {
@@ -133,6 +137,11 @@ const TREE: SectionGroup[] = [
         blocks: [],
       },
       {
+        id: 'add-to-home-screen',
+        label: 'Add to Home Screen',
+        blocks: [],
+      },
+      {
         id: 'custom-block-1',
         label: 'Custom Block 1',
         blocks: [],
@@ -183,8 +192,9 @@ const TREE: SectionGroup[] = [
 const GROUPABLE_TYPES = ['reward-calendar', 'daily-bonus', 'popup'];
 const MAX_GROUP_SIZE = 3;
 
-/* Static/dynamic indicator (Cap 7.A.1) — "New" label on Bundle & Promotion only */
-const NEW_BLOCKS = ['bundle', 'promotion'];
+/* Static/dynamic indicator (Cap 7.A.1) — "New" on Bundle & Promotion only.
+ * NEW_BLOCKS now lives in ./NewBadge so the tree dot and the config-drawer
+ * badge share one source of truth. */
 
 /* First-time default — only these Offer blocks appear in the tree, in exactly
  * this order; everything else stays in the Add Block modal until added. */
@@ -234,6 +244,9 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
 }) {
   // First-time users see the animated block-tree skeleton once, for 6s.
   const loading = useFirstOpen(6000);
+
+  /* Vertical split between this card and the stacked config card below. */
+  const stack = useResizableStack(!!bottomOverride);
 
   // First-time: nothing selected until the user picks a block
   const [activeId, setActiveId] = useState(activeSectionId ?? '');
@@ -450,6 +463,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           ? { ...i, children: [...i.children, source] }
           : i));
       setGroupOpen((prev) => new Set(prev).add(target.id));
+      setActiveId(target.id);
       return;
     }
 
@@ -459,6 +473,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         ? { id: groupId, type: 'group' as const, title: 'Reward & Bonuses', children: [i, source] }
         : i));
     setGroupOpen((prev) => new Set(prev).add(groupId));
+    setActiveId(groupId);
   };
 
   /* Dissolve a group: its children return to the top level, in order,
@@ -494,6 +509,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
       return merged;
     });
     setGroupOpen((prev) => new Set(prev).add(groupId));
+    setActiveId(groupId);
   };
 
   /* Click on the Group action: combine the selection with the target —
@@ -514,6 +530,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           ? { ...i, children: [...i.children, section] }
           : i));
       setGroupOpen((prev) => new Set(prev).add(group.id));
+      setActiveId(group.id);
       return;
     }
 
@@ -541,6 +558,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           : { id: groupId, type: 'group' as const, title: 'Reward & Bonuses', children: [i, dragged] };
       }));
       setGroupOpen((prev) => new Set(prev).add(groupId));
+      setActiveId(groupId);
       return;
     }
 
@@ -654,8 +672,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         className={styles.dragLayer}
         style={{ width: treeDrag.dragWidth, height: treeDrag.gapSize }}
       >
-        <GripVertical size={14} strokeWidth={1.75} className={styles.dragLayerGrip} />
-        <Icon size={14} strokeWidth={1.75} className={styles.dragLayerIcon} />
+        <GripVertical size={10} strokeWidth={1.75} className={styles.dragLayerGrip} />
+        <Icon size={10} strokeWidth={1.75} className={styles.dragLayerIcon} />
         <span className={styles.dragLayerLabel}>{label}</span>
       </div>
     );
@@ -716,24 +734,21 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           >
             {(() => {
               const SectionIcon = sectionIconFor(section.id);
-              return <SectionIcon size={14} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />;
+              return <SectionIcon size={10} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />;
             })()}
-            {opts.draggable && <GripVertical size={14} strokeWidth={1.75} className={styles.sectionIconGrip} />}
+            {opts.draggable && <GripVertical size={10} strokeWidth={1.75} className={styles.sectionIconGrip} />}
           </span>
           <span className={`${styles.sectionLabel} ${isHidden ? styles.sectionLabelHidden : ''}`}>
             {section.label}
             {NEW_BLOCKS.includes(section.id) && (
-              /* The badge's own tint is a near-match for the active row's
-               * violet-50 fill, so on a selected row it drops the fill
-               * entirely and reads as plain indigo text. */
-              <Badge
-                variant="success"
-                className={`ml-1.5 px-1.5 py-1 text-[10px] align-middle text-[#4f46e5] ${
-                  isActive ? 'bg-transparent' : 'bg-[#eef2ff]'
-                }`}
-              >
-                New
-              </Badge>
+              /* "New" indicator reduced to a small indigo dot — lighter-weight
+               * than the pill, and the aria-label keeps it announced. */
+              <span
+                className={styles.newDot}
+                role="img"
+                aria-label="New"
+                title="New"
+              />
             )}
           </span>
           {opts.actions && (
@@ -834,7 +849,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                     key={block.id}
                     className={`${styles.blockRow} ${styles.blockRowToggleOnly}`}
                   >
-                    <block.icon size={14} strokeWidth={1.75} className={`${styles.blockIcon} ${blockHidden ? styles.blockIconHidden : ''}`} />
+                    <block.icon size={10} strokeWidth={1.75} className={`${styles.blockIcon} ${blockHidden ? styles.blockIconHidden : ''}`} />
                     <span className={`${styles.blockLabel} ${blockHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
                     <button
                       className={`${styles.eyeBtn} ${blockHidden ? styles.eyeBtnVisible : ''}`}
@@ -855,7 +870,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                     onSectionActivate?.(block.id, block.label);
                   }}
                 >
-                  <block.icon size={14} strokeWidth={1.75} className={`${styles.blockIcon} ${isHidden ? styles.blockIconHidden : ''}`} />
+                  <block.icon size={10} strokeWidth={1.75} className={`${styles.blockIcon} ${isHidden ? styles.blockIconHidden : ''}`} />
                   <span className={`${styles.blockLabel} ${isHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
                   {block.subtitle && (
                     <span className={`${styles.blockSubtitle} ${isHidden ? styles.blockLabelHidden : ''}`}>– {block.subtitle}</span>
@@ -901,8 +916,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
             onPointerDown={beginDrag(item.id)}
             onClick={(e) => e.stopPropagation()}
           >
-            <Folder size={14} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
-            <GripVertical size={14} strokeWidth={1.75} className={styles.sectionIconGrip} />
+            <Folder size={10} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
+            <GripVertical size={10} strokeWidth={1.75} className={styles.sectionIconGrip} />
           </span>
           <span className={styles.sectionLabel}>{item.title}</span>
           <span className={styles.groupActionSlot}>
@@ -983,9 +998,10 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                     aria-label="Add block"
                     onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); }}
                   >
-                    {/* Figma 191:2608 — 12px glyph, 1.2 stroke on a 12px
-                      * frame (= 2.4 at lucide's 24 viewBox), indigo-700. */}
-                    <Plus size={12} strokeWidth={2.4} />
+                    {/* Figma 191:2608 specifies a 12px glyph; nudged up to 14
+                      * for legibility in the 24px button. strokeWidth stays
+                      * 2.4 so the whole mark scales proportionally. */}
+                    <Plus size={14} strokeWidth={2.4} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" sideOffset={6}>Add New Block</TooltipContent>
@@ -1055,9 +1071,15 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   );
 
   return (
-    <div className={styles.blocksPanelRoot}>
-      {/* Sections card — fills all available space */}
-      <div className={styles.card} style={{ flex: bottomOverride ? '0 0 55%' : '1 1 0' }}>
+    <div className={styles.blocksPanelRoot} ref={stack.containerRef}>
+      {/* Sections card. When a config card is stacked below, the split is
+        * user-adjustable and owned imperatively by useResizableStack — hence
+        * no flex in the style prop for that case. */}
+      <div
+        ref={stack.topRef}
+        className={styles.card}
+        style={bottomOverride ? undefined : { flex: '1 1 0' }}
+      >
         <div className={styles.cardHeader}>
           <span className={styles.cardTitle}>Webstore Blocks</span>
         </div>
@@ -1067,10 +1089,23 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
       {/* Settings card — only visible in narrow mode when a section is active */}
       {bottomOverride && (
         <>
-          <div className={styles.stackDivider} />
-          <div className={styles.card} style={{ flex: '1 1 0' }}>
+          <div
+            className={`${styles.stackDivider} ${stack.isResizing ? styles.stackDividerActive : ''}`}
+            onPointerDown={stack.onDividerPointerDown}
+            onDoubleClick={stack.onDividerDoubleClick}
+            role="separator"
+            aria-orientation="horizontal"
+            aria-label="Resize sections"
+            title="Drag to resize · double-click to reset"
+          >
+            <span className={styles.stackDividerRule} />
+          </div>
+          <div className={styles.card} style={{ flex: '1 1 0', minHeight: 0 }}>
             <div className={styles.cardHeader}>
-              <span className={styles.cardTitle}>{bottomOverride.title}</span>
+              <span className={styles.cardTitle}>
+                {bottomOverride.title}
+                {bottomOverride.isNew && <NewBadge />}
+              </span>
               <div className={styles.cardActions}>
                 <button className={styles.cardMenuBtn} aria-label="More options">
                   <MoreHorizontal size={16} strokeWidth={1.75} />
@@ -1137,11 +1172,34 @@ function PersonalizationPanel() {
 }
 
 export default function LeftPanel({ state, activeSectionId, onSectionActivate, bottomOverride }: Props) {
+  const { isResizing, panelRef, onHandlePointerDown, onHandleDoubleClick } = useResizableDrawer();
+
   return (
-    <aside className={styles.panel} aria-label="Editor panel">
+    /* No `style={{ width }}` — the hook owns the width imperatively so a
+     * re-render mid-drag can't snap the panel back to the last committed
+     * value. See useResizableDrawer's applyWidth. */
+    <aside
+      ref={panelRef}
+      className={`${styles.panel} ${isResizing ? styles.panelResizing : ''}`}
+      aria-label="Editor panel"
+    >
       {state.activePanel === 'blocks'          && <BlocksPanel activeSectionId={activeSectionId} onSectionActivate={onSectionActivate} bottomOverride={bottomOverride} />}
       {state.activePanel === 'brandKit'        && <BrandKitPanel />}
       {state.activePanel === 'personalization' && <PersonalizationPanel />}
+
+      {/* Resize handle — a wide invisible hit area with a thin visible rule,
+        * so it's easy to grab without drawing a chunky divider. */}
+      <div
+        className={styles.resizeHandle}
+        onPointerDown={onHandlePointerDown}
+        onDoubleClick={onHandleDoubleClick}
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize editor panel"
+        title="Drag to resize · double-click to reset"
+      >
+        <span className={styles.resizeHandleRule} />
+      </div>
     </aside>
   );
 }

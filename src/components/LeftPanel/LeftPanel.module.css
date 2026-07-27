@@ -1,6 +1,9 @@
 /* ── Outer panel shell ── */
 .panel {
+  /* Width is set inline by useResizableDrawer; this is the pre-hydration
+   * fallback only. position: relative anchors the resize handle. */
   width: var(--panel-width);
+  position: relative;
   flex-shrink: 0;
   height: 100%;
   display: flex;
@@ -8,6 +11,44 @@
   padding: 10px 10px 10px 10px;
   gap: 0;
   box-sizing: border-box;
+}
+
+/* While dragging: no transitions anywhere inside, so the panel tracks the
+ * pointer exactly instead of easing behind it. */
+.panelResizing,
+.panelResizing * {
+  transition: none !important;
+}
+
+/* ── Resize handle ──
+ * 10px grab area straddling the panel's right edge, containing a 1px rule
+ * that only shows on hover/drag. The cursor is the Figma resize glyph
+ * (117:181) rotated 90°: that node is the row-resize variant, but a handle
+ * on a vertical edge is dragged horizontally. col-resize is the fallback. */
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: -5px;
+  width: 10px;
+  height: 100%;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  cursor: col-resize;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg transform='rotate(90 12 12)'%3E%3Cg transform='translate(2 0)'%3E%3Cpath d='M14.0037 6.0113H11V11.0113H18V13.0113H11V18.0113H14.1574L9.9995 22.0137L5.84863 18.0113H9V13.0113H2V11.0113H9V6.0113H6.00244L9.9995 2L14.0037 6.0113Z' stroke='%23ffffff' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M14.0037 6.0113H11V11.0113H18V13.0113H11V18.0113H14.1574L9.9995 22.0137L5.84863 18.0113H9V13.0113H2V11.0113H9V6.0113H6.00244L9.9995 2L14.0037 6.0113Z' fill='%23020617'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") 12 12, col-resize;
+}
+
+.resizeHandleRule {
+  width: 1px;
+  height: 100%;
+  border-radius: 1px;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+.resizeHandle:hover .resizeHandleRule,
+.panelResizing .resizeHandleRule {
+  background: var(--color-indigo-600);
 }
 
 /* ── BlocksPanel root — sections + optional settings stacked ── */
@@ -19,9 +60,36 @@
 }
 
 /* 8px gap between sections card and settings card */
+/* Draggable split between the Webstore Blocks card and the stacked config
+ * card. 10px grab area with a 1px rule that only appears on hover/drag.
+ * Cursor is the Figma resize glyph (117:181) used as-authored — that node is
+ * the row-resize variant, which is exactly this axis. */
 .stackDivider {
   flex-shrink: 0;
-  height: 8px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  cursor: row-resize;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg transform='translate(2 0)'%3E%3Cpath d='M14.0037 6.0113H11V11.0113H18V13.0113H11V18.0113H14.1574L9.9995 22.0137L5.84863 18.0113H9V13.0113H2V11.0113H9V6.0113H6.00244L9.9995 2L14.0037 6.0113Z' stroke='%23ffffff' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M14.0037 6.0113H11V11.0113H18V13.0113H11V18.0113H14.1574L9.9995 22.0137L5.84863 18.0113H9V13.0113H2V11.0113H9V6.0113H6.00244L9.9995 2L14.0037 6.0113Z' fill='%23020617'/%3E%3C/g%3E%3C/svg%3E") 12 12, row-resize;
+}
+
+.stackDividerRule {
+  width: 100%;
+  height: 1px;
+  border-radius: 1px;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+.stackDivider:hover .stackDividerRule,
+.stackDividerActive .stackDividerRule {
+  background: var(--color-indigo-600);
+}
+
+/* No easing on the panes while dragging, so the split tracks the pointer. */
+.stackDividerActive ~ .card,
+.blocksPanelRoot:has(.stackDividerActive) .card {
+  transition: none !important;
 }
 
 /* ── Card ── */
@@ -173,7 +241,6 @@
  * "selected" and "hover-synced" stay tellable apart. */
 .sectionRowActive {
   background: var(--color-violet-50);
-  box-shadow: inset 3px 0 0 var(--color-indigo-600);
   color: var(--color-indigo-600);
 }
 
@@ -367,6 +434,20 @@
    * `overflow: hidden` slices them off. Fits inside the row's existing
    * content height, so row rhythm is unchanged. */
   line-height: 16px;
+}
+
+/* "New" indicator — replaces the pill badge. A 5px indigo dot set just after
+ * the label text; inline-block so it rides the text baseline area. Doesn't
+ * shrink even as the label ellipsizes. */
+.newDot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--color-indigo-600);
+  vertical-align: middle;
 }
 
 /* Hidden state — per design spec, dim via opacity: icon .35, label .45.

@@ -7,6 +7,7 @@ import TopNavigation from '../TopNavigation/TopNavigation';
 import LeftPanel from '../LeftPanel/LeftPanel';
 import PreviewWorkspace from '../PreviewWorkspace/PreviewWorkspace';
 import ConfigDrawer, { ConfigDrawerBody } from '../ConfigDrawer/ConfigDrawer';
+import { isNewBlock } from '../LeftPanel/NewBadge';
 import SECTION_CONFIGS, { SUB_BLOCK_CONFIGS } from '../ConfigDrawer/config-data';
 import styles from './EditorShell.module.css';
 
@@ -58,6 +59,7 @@ export default function EditorShell({ state, onStateChange }: Props) {
             title: drawerTitle(configSection),
             content: <ConfigDrawerBody sectionId={configSection} />,
             onClose: closeDrawer,
+            isNew: isNewBlock(configSection),
           } : undefined}
         />
         <PreviewWorkspace
