@@ -1,10 +1,13 @@
 import type { ReactNode, ComponentType } from 'react';
 import {
-  Image, Package, Megaphone, Ticket, Calendar, Gift, MessageSquare,
+  Image, Package, Megaphone, Ticket, Calendar, Gift, MessageSquare, Blocks,
+  BarChart3,
 } from 'lucide-react';
 import {
   BannerPreview, BundlePreview, PromotionPreview, RollingOfferPreview,
-  RewardCalendarPreview, DailyBonusPreview, PopupPreview,
+  RewardCalendarPreview, DailyBonusPreview, PopupPreview, ProgressBarPreview,
+  CustomBlock1Preview, CustomBlock2Preview, CustomBlock3Preview,
+  CustomBlock4Preview, CustomBlock5Preview,
 } from './previews';
 
 /* ── Block registry ──
@@ -24,6 +27,15 @@ export interface BlockDefinition {
 }
 
 export const BLOCK_REGISTRY: BlockDefinition[] = [
+  {
+    id: 'progress-bar',
+    name: 'Progress Bar',
+    icon: <BarChart3 size={16} strokeWidth={1.75} />,
+    category: 'Promotions',
+    description: 'Goal progress with milestones',
+    preview: ProgressBarPreview,
+    keywords: ['progress', 'milestone', 'battle pass', 'goal', 'tier'],
+  },
   {
     id: 'banner',
     name: 'Banner',
@@ -88,6 +100,51 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     description: 'Triggered overlay message',
     preview: PopupPreview,
     keywords: ['modal', 'overlay', 'announcement', 'triggered'],
+  },
+  {
+    id: 'custom-block-1',
+    name: 'Custom Block 1',
+    icon: <Blocks size={16} strokeWidth={1.75} />,
+    category: 'Custom',
+    description: 'Custom offer block',
+    preview: CustomBlock1Preview,
+    keywords: ['custom', 'blank', 'placeholder'],
+  },
+  {
+    id: 'custom-block-2',
+    name: 'Custom Block 2',
+    icon: <Blocks size={16} strokeWidth={1.75} />,
+    category: 'Custom',
+    description: 'Custom offer block',
+    preview: CustomBlock2Preview,
+    keywords: ['custom', 'blank', 'placeholder'],
+  },
+  {
+    id: 'custom-block-3',
+    name: 'Custom Block 3',
+    icon: <Blocks size={16} strokeWidth={1.75} />,
+    category: 'Custom',
+    description: 'Custom offer block',
+    preview: CustomBlock3Preview,
+    keywords: ['custom', 'blank', 'placeholder'],
+  },
+  {
+    id: 'custom-block-4',
+    name: 'Custom Block 298357983275897429857423975',
+    icon: <Blocks size={16} strokeWidth={1.75} />,
+    category: 'Custom',
+    description: 'Custom offer block',
+    preview: CustomBlock4Preview,
+    keywords: ['custom', 'blank', 'placeholder'],
+  },
+  {
+    id: 'custom-block-5',
+    name: 'Custom Block 5',
+    icon: <Blocks size={16} strokeWidth={1.75} />,
+    category: 'Custom',
+    description: 'Custom offer block',
+    preview: CustomBlock5Preview,
+    keywords: ['custom', 'blank', 'placeholder'],
   },
 ];
 

@@ -5,6 +5,7 @@ import CollectWidget from './sections/CollectWidget';
 import Promotion from './sections/Promotion';
 import Bundle from './sections/Bundle';
 import RollingOffer from './sections/RollingOffer';
+import ProgressBar from './sections/ProgressBar';
 import Footer from './sections/Footer';
 
 /* Section ids match the Sections tree + config-data ids so selecting a
@@ -135,6 +136,60 @@ export const DEFAULT_PREVIEW_STATE: PreviewState = {
           },
         ],
       },
+    },
+    {
+      id: 'progress-bar',
+      label: 'Progress Bar',
+      component: ProgressBar,
+      isVisible: true,
+      data: {
+        title: 'Battle Pass',
+        progress: 65,
+        progressLabel: '650 / 1,000',
+        milestones: [
+          { at: 20, icon: '💰', label: '10K' },
+          { at: 50, icon: '🧪', label: 'x25' },
+          { at: 80, icon: '👑', label: 'x5' },
+          { at: 100, icon: '🎁', label: 'Bonus' },
+        ],
+      },
+    },
+    /* Custom Block 1-5 — generic placeholder slots (Add Offer modal), reuse
+     * CollectWidget like the other registry-only blocks above. */
+    {
+      id: 'custom-block-1',
+      label: 'Custom Block 1',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '✨', cta: 'COLLECT' },
+    },
+    {
+      id: 'custom-block-2',
+      label: 'Custom Block 2',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '✨', cta: 'COLLECT' },
+    },
+    {
+      id: 'custom-block-3',
+      label: 'Custom Block 3',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '✨', cta: 'COLLECT' },
+    },
+    {
+      id: 'custom-block-4',
+      label: 'Custom Block 298357983275897429857423975',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '✨', cta: 'COLLECT' },
+    },
+    {
+      id: 'custom-block-5',
+      label: 'Custom Block 5',
+      component: CollectWidget,
+      isVisible: true,
+      data: { icon: '✨', cta: 'COLLECT' },
     },
     {
       id: 'footer',

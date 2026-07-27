@@ -3,6 +3,7 @@ import Banner from '../StorePreview/sections/Banner';
 import Promotion from '../StorePreview/sections/Promotion';
 import Bundle from '../StorePreview/sections/Bundle';
 import RollingOffer from '../StorePreview/sections/RollingOffer';
+import ProgressBar from '../StorePreview/sections/ProgressBar';
 import CollectWidget from '../StorePreview/sections/CollectWidget';
 import { DEFAULT_PREVIEW_STATE } from '../StorePreview/state';
 
@@ -45,6 +46,14 @@ export function RollingOfferPreview() {
   );
 }
 
+export function ProgressBarPreview() {
+  return (
+    <div style={frame}>
+      <ProgressBar sectionId="preview-progress-bar" data={dataOf('progress-bar')} isVisible />
+    </div>
+  );
+}
+
 export function BundlePreview() {
   return (
     <div style={frame}>
@@ -72,4 +81,24 @@ export function DailyBonusPreview() {
 
 export function PopupPreview() {
   return <CollectWidgetPreview id="popup" />;
+}
+
+export function CustomBlock1Preview() {
+  return <CollectWidgetPreview id="custom-block-1" />;
+}
+
+export function CustomBlock2Preview() {
+  return <CollectWidgetPreview id="custom-block-2" />;
+}
+
+export function CustomBlock3Preview() {
+  return <CollectWidgetPreview id="custom-block-3" />;
+}
+
+export function CustomBlock4Preview() {
+  return <CollectWidgetPreview id="custom-block-4" />;
+}
+
+export function CustomBlock5Preview() {
+  return <CollectWidgetPreview id="custom-block-5" />;
 }

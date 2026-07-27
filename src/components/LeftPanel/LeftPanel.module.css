@@ -40,7 +40,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+  padding: 10px 20px 10px 14px;
   border-bottom: 1px solid var(--color-border-subtle);
   flex-shrink: 0;
   min-height: 44px;
@@ -123,26 +123,29 @@
   gap: 6px;
 }
 
-/* "+" on the group label row, right-aligned — opens the Add Block panel */
+/* "+" on the group label row, right-aligned — opens the Add Block panel.
+ * Figma 191:2608 (spec exported at 0.75 scale, values kept verbatim):
+ * pill button with a hairline border and an xs shadow. */
 .treeGroupAddBtn {
   display: flex;
-  align-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 7.5px;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  align-items: center;
+  gap: 7.5px;
   margin-left: auto;
-  border-radius: var(--radius-sm);
-  color: var(--color-gray-600);
-  transition: color 120ms ease;
-}
-
-.treeGroupAddBtn {
-  transition: color 120ms ease, background 120ms ease;
+  border-radius: 7499.25px;
+  border: 0.75px solid #e5e5e5;
+  background: #fff;
+  box-shadow: 0 0.75px 1.5px 0 rgba(0, 0, 0, 0.05);
+  color: var(--color-indigo-700);
+  transition: background 120ms ease, border-color 120ms ease;
 }
 
 .treeGroupAddBtn:hover {
-  color: var(--color-indigo-600);
   background: var(--color-muted);
+  border-color: var(--color-gray-200);
 }
 
 /* Section row */
@@ -158,6 +161,7 @@
 }
 
 .sectionRow:hover { background: var(--color-muted); }
+.sectionRow:hover .sectionLabel { color: var(--color-indigo-600); }
 
 /* Keep the hover state while the Add Block panel was opened from this row
  * specifically (not from the group label's "+", which shares the same
@@ -168,7 +172,7 @@
  * that hover-sync doesn't have: a solid left bar and a bolder label, so
  * "selected" and "hover-synced" stay tellable apart. */
 .sectionRowActive {
-  background: rgba(79, 70, 229, 0.12);
+  background: var(--color-violet-50);
   box-shadow: inset 3px 0 0 var(--color-indigo-600);
   color: var(--color-indigo-600);
 }
@@ -183,11 +187,11 @@
   opacity: 1;
 }
 
-.sectionRowActive:hover { background: rgba(79, 70, 229, 0.18); }
+.sectionRowActive:hover { background: var(--color-violet-100); }
 
-/* Hover focus — synced with the Store Preview (Primary/10% bg, primary text) */
+/* Hover focus — synced with the Store Preview (violet-50 bg, primary text) */
 .sectionRowFocused {
-  background: rgba(79, 70, 229, 0.10);
+  background: var(--color-violet-50);
 }
 
 .sectionRowFocused .sectionLabel { color: var(--color-indigo-600); }
@@ -229,23 +233,22 @@
 .sectionRowHoverable:hover .sectionIconDefault { display: none; }
 .sectionRowHoverable:hover .sectionIconGrip    { display: block; }
 
-/* Drag states */
-.sectionRowDragging { opacity: 0.35; }
+/* No dimmed-source state: the dragged row leaves the flow entirely and is
+ * re-rendered in .dragLayer, so there is nothing left in place to dim. */
 
-/* Grouping drag feedback — compatible target expands to signal nesting */
+/* Nest-target feedback — plain gray fill only. Deliberately NO padding
+ * change: growing the row would move the pointer-zone boundaries under a
+ * stationary cursor, so the preview could flip zones without the user
+ * moving. The indented nest preview carries the "becomes a child" meaning. */
 .sectionRowGroupTarget {
-  background: rgba(79, 70, 229, 0.08);
-  box-shadow: inset 0 0 0 1.5px var(--color-indigo-600);
-  padding-top: 10px;
-  padding-bottom: 10px;
+  background: var(--color-muted);
 }
 
-/* Group-menu preview — hovering a "Group with …" item rings the target row
- * so it's clear what will be grouped. Same ring as the drag target, minus
- * the padding jump (no layout shift while scanning a menu). */
+/* Group-menu preview — hovering a "Group with …" item highlights the target
+ * row with the same gray hover fill, so it's clear what will be grouped
+ * (no padding jump, so no layout shift while scanning a menu). */
 .sectionRowGroupPreview {
-  background: rgba(79, 70, 229, 0.08);
-  box-shadow: inset 0 0 0 1.5px var(--color-indigo-600);
+  background: var(--color-muted);
 }
 
 /* ── Section groups (Reward Calendar / Daily Bonus / Popup) ── */
@@ -295,25 +298,55 @@
   color: var(--color-indigo-600);
 }
 
-/* Insertion line shown between sections while dragging */
-.dragDivider {
-  height: 2px;
-  background: #6366f1;
-  border-radius: 2px;
-  margin: 0 2px;
-  position: relative;
+/* ── Live drag slot ──
+ * The temporary opening the list makes for the dragged block. Its height is
+ * set inline from the dragged row's measured height, so the gap is exactly
+ * the space the block will occupy. */
+.dragGap {
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: rgba(79, 70, 229, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.22);
 }
 
-.dragDivider::before {
-  content: '';
-  position: absolute;
-  left: -4px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #6366f1;
+/* Nested slot — indented to sit on .groupChildren's rail, so it reads as a
+ * child position rather than a sibling one. */
+.dragGapIndent {
+  margin-left: 20px;
+}
+
+/* ── Floating drag layer ──
+ * The dragged block, detached from the document. `transform` is written
+ * directly by the drag engine each frame (a React re-render per frame would
+ * be both slower and jerkier), so declare no transform/transition here. */
+.dragLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px 5px 2px;
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  /* Never intercept the pointer — the engine hit-tests the list beneath. */
+  pointer-events: none;
+  cursor: grabbing;
+}
+
+.dragLayerGrip { color: var(--color-gray-400); flex-shrink: 0; }
+.dragLayerIcon { color: var(--color-gray-400); flex-shrink: 0; }
+
+.dragLayerLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-gray-700, #374151);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sectionLabel {
@@ -322,6 +355,10 @@
   font-weight: var(--font-weight-regular);
   color: var(--color-gray-600);
   flex: 1;
+  /* A flex item's content-based min-width floor ignores white-space: nowrap
+   * only when explicitly zeroed — otherwise it can't shrink below the full
+   * unwrapped text width, and the ellipsis below never gets a chance to fire. */
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -485,6 +522,26 @@
   font-family: var(--font-sans);
   font-size: var(--text-xs);
   color: var(--color-gray-700, #374151);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Display-only leaf (e.g. Header's Logo/Player ID/Player Name) — hide/show
+ * only, not selectable. Keeps the normal hover background (feedback that
+ * you're pointing at the row) but a default cursor, since it's not clickable. */
+.blockRowToggleOnly {
+  cursor: default;
+}
+
+.blockRowToggleOnly:hover .eyeBtn { opacity: 1; }
+
+/* Match Bundle's sub-row rhythm (24px) — the 20px eyeBtn would otherwise
+ * stretch these rows to 30px even though the list gap is the same 2px. */
+.blockRowToggleOnly .eyeBtn {
+  width: 14px;
+  height: 14px;
 }
 
 .blockSubtitle {
@@ -521,23 +578,48 @@
   gap: 4px;
   text-align: center;
   margin: var(--space-2);
-  padding: 20px 16px;
+  padding: 30px 16px 20px;
+  background: #FAFAFA;
   border: 1px dashed var(--color-gray-200);
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
 }
 
 .treeGroupEmptyTitle {
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  font-size: 12px;
   font-weight: var(--font-weight-semibold);
-  color: #171717;
+  color: #6B7281;
 }
 
 .treeGroupEmptySubtitle {
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
+  font-size: 12px;
   color: var(--color-gray-500);
   line-height: 1.4;
+  /* Card's flex `gap: 4px` already spaces every child evenly; add 4px more
+   * here so title→subtitle is 8px without touching subtitle→button. */
+  margin-top: 4px;
+}
+
+.treeGroupEmptyAddBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-indigo-600);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: text-decoration-color 120ms ease;
+}
+
+.treeGroupEmptyAddBtn:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ── Empty state ── */

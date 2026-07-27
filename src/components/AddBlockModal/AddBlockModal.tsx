@@ -86,7 +86,15 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
 
         <div className="flex min-h-0 flex-1">
           {/* Block list rail */}
-          <ScrollArea className="w-[254px] shrink-0 bg-white">
+          {/* Radix's Viewport wraps children in a `display:table` div for
+           * accurate scroll-size measurement. Auto table layout ignores
+           * max-width when a row's min-content (a long, nowrap label) is
+           * wider than the rail — it grows the table instead of clipping.
+           * Forcing `display:block` removes table sizing entirely so the
+           * row is capped at 254px and the label's ellipsis can engage.
+           * Radix sets `display: table` via inline style, which beats a
+           * plain class selector — needs `!important` to actually win. */}
+          <ScrollArea className="w-[254px] shrink-0 bg-white [&_[data-radix-scroll-area-viewport]>div]:!block">
             <div className="space-y-0.5 p-4" role="listbox" aria-label="Available blocks">
               {available.length === 0 && (
                 <p className="px-2 py-4 text-center text-sm text-[#a3a3a3]">

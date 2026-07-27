@@ -3,7 +3,7 @@ import {
   MoreHorizontal, X, Palette, Wand2,
   ChevronRight, ChevronDown,
   MousePointer2,
-  ShoppingBag, Timer, Star,
+  ShoppingBag, Timer, Star, Image, IdCard, User,
   CirclePlus, Plus, Eye, EyeOff, GripVertical, Trash2, Folder, Combine, Ungroup,
   PanelTop, PanelBottom, Rows2,
 } from 'lucide-react';
@@ -21,6 +21,7 @@ import { useGrouping } from '../../hooks/useGrouping';
 import { useFirstOpen } from '../../hooks/useFirstOpen';
 import AddBlockModal from '../AddBlockModal/AddBlockModal';
 import BlockTreeSkeleton from './BlockTreeSkeleton';
+import { useOfferTreeDrag, type DropTarget } from './useOfferTreeDrag';
 import styles from './LeftPanel.module.css';
 
 export interface BottomOverride {
@@ -43,6 +44,10 @@ interface Block {
   label: string;
   icon: React.ElementType;
   subtitle?: string;
+  /* Display-only leaf: hide/show via the eye icon, but not selectable —
+   * no config drawer, no active state. Used for Header's Logo/Player
+   * ID/Player Name, which have no dedicated config surface of their own. */
+  toggleOnly?: boolean;
 }
 
 interface Section {
@@ -66,14 +71,23 @@ const TREE: SectionGroup[] = [
       {
         id: 'header',
         label: 'Header',
-        blocks: [],
+        blocks: [
+          { id: 'header-logo',       label: 'Logo',        icon: Image,      toggleOnly: true },
+          { id: 'header-player-id',  label: 'Player ID',   icon: IdCard,     toggleOnly: true },
+          { id: 'header-player-name', label: 'Player Name', icon: User,      toggleOnly: true },
+        ],
       },
     ],
   },
   {
     id: 'template-group',
-    label: 'Offers',
+    label: 'Offer Blocks',
     sections: [
+      {
+        id: 'progress-bar',
+        label: 'Progress Bar',
+        blocks: [],
+      },
       {
         id: 'banner',
         label: 'Banner',
@@ -118,6 +132,31 @@ const TREE: SectionGroup[] = [
         label: 'Popup',
         blocks: [],
       },
+      {
+        id: 'custom-block-1',
+        label: 'Custom Block 1',
+        blocks: [],
+      },
+      {
+        id: 'custom-block-2',
+        label: 'Custom Block 2',
+        blocks: [],
+      },
+      {
+        id: 'custom-block-3',
+        label: 'Custom Block 3',
+        blocks: [],
+      },
+      {
+        id: 'custom-block-4',
+        label: 'Custom Block 298357983275897429857423975',
+        blocks: [],
+      },
+      {
+        id: 'custom-block-5',
+        label: 'Custom Block 5',
+        blocks: [],
+      },
     ],
   },
   {
@@ -143,9 +182,16 @@ const MAX_GROUP_SIZE = 3;
 /* Static/dynamic indicator (Cap 7.A.1) — "New" label on Bundle & Promotion only */
 const NEW_BLOCKS = ['bundle', 'promotion'];
 
-/* First-time default — only these Offers blocks appear in the tree; the rest
- * (Daily Bonus, Popup) stay available in the Add Block modal until added. */
-const DEFAULT_OFFER_BLOCKS = ['banner', 'bundle', 'promotion', 'rolling-offer', 'reward-calendar'];
+/* First-time default — only these Offer blocks appear in the tree, in exactly
+ * this order; everything else stays in the Add Block modal until added. */
+const DEFAULT_OFFER_BLOCKS = [
+  'progress-bar',
+  'bundle',
+  'promotion',
+  'rolling-offer',
+  'banner',
+  'reward-calendar',
+];
 
 /* Row icon by section type: Header/Footer are panels, offer blocks are Rows2 */
 const SECTION_ICONS: Record<string, React.ElementType> = {
@@ -182,8 +228,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   bottomOverride?: BottomOverride;
   activeSectionId?: string;
 }) {
-  // First-time users see the animated block-tree skeleton for 3s.
-  const loading = useFirstOpen(3000);
+  // First-time users see the animated block-tree skeleton once, for 6s.
+  const loading = useFirstOpen(6000);
 
   // First-time: nothing selected until the user picks a block
   const [activeId, setActiveId] = useState(activeSectionId ?? '');
@@ -218,7 +264,11 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   // template-group items — flat sections plus section groups (drag to combine)
   const templateGroup = TREE.find((g) => g.id === 'template-group')!;
   const [items, setItems] = useState<TemplateItem[]>(
-    () => templateGroup.sections.filter((s) => DEFAULT_OFFER_BLOCKS.includes(s.id)),
+    /* Map over DEFAULT_OFFER_BLOCKS rather than filtering TREE, so the tree
+     * honours the specified default order instead of TREE's declaration order. */
+    () => DEFAULT_OFFER_BLOCKS
+      .map((id) => templateGroup.sections.find((s) => s.id === id))
+      .filter((s): s is Section => !!s),
   );
   const groupSeq = useRef(1);
 
@@ -305,35 +355,10 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
       return next;
     });
 
-  // drag state — mode decides between reordering and grouping
-  const [dragId, setDragId]     = useState<string | null>(null);
-  const [dragOver, setDragOver] = useState<string | null>(null);
-  const [dragMode, setDragMode] = useState<'reorder' | 'group'>('reorder');
-
   /* Section ids to highlight while a "Group with …" / "Add to …" menu item
    * is hovered, so it's clear which block(s) the action targets. */
   const [groupPreviewIds, setGroupPreviewIds] = useState<string[]>([]);
 
-  const resetDrag = () => { setDragId(null); setDragOver(null); setDragMode('reorder'); };
-
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    e.dataTransfer.effectAllowed = 'move';
-    setDragId(id);
-  };
-  const handleDragOver = (e: React.DragEvent, target: TemplateItem) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (!dragId || dragId === target.id) return;
-    // group mode in the middle band of a compatible target; edges keep reordering
-    let mode: 'reorder' | 'group' = 'reorder';
-    if (canCreateGroup(dragId, target)) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const y = e.clientY - rect.top;
-      if (y > rect.height * 0.3 && y < rect.height * 0.7) mode = 'group';
-    }
-    setDragMode(mode);
-    setDragOver(target.id);
-  };
   /* Find a drag source anywhere — top level or nested inside a group. */
   const findItem = (id: string): TemplateItem | undefined => {
     for (const item of items) {
@@ -409,6 +434,10 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   const combine = (sourceId: string, target: TemplateItem) => {
     const source = findItem(sourceId);
     if (!source || isGroupItem(source)) return;
+    /* Grouping unmounts the source row's dropdown before its onOpenChange
+     * cleanup runs, so clear the hover-preview highlight here to avoid a
+     * phantom hover lingering on the target once it's nested. */
+    setGroupPreviewIds([]);
 
     if (isGroupItem(target)) {
       if (target.children.length >= MAX_GROUP_SIZE) return;
@@ -446,6 +475,9 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     if (!source || isGroupItem(source)) return;
     const targets = targetIds.map((id) => findItem(id)).filter((t) => t && !isGroupItem(t)) as Section[];
     if (targets.length !== targetIds.length) return;
+    /* Clear the hover-preview highlight before the source row's dropdown
+     * unmounts (see note in combine). */
+    setGroupPreviewIds([]);
 
     const groupId = `group-${groupSeq.current++}`;
     setItems((prev) => {
@@ -489,42 +521,141 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     setGroupOpen((prev) => new Set(prev).add(groupId));
   };
 
-  const handleDrop = (target: TemplateItem) => {
-    if (!dragId || dragId === target.id) { resetDrag(); return; }
-    const dragged = findItem(dragId);
-    if (!dragged) { resetDrag(); return; }
-
-    if (dragMode === 'group' && !isGroupItem(dragged) && canCreateGroup(dragId, target)) {
-      const groupId = isGroupItem(target) ? target.id : `group-${groupSeq.current++}`;
-      setItems((prev) => removeEverywhere(prev, dragId)
-        .map((i) => {
-          if (i.id !== target.id) return i;
-          return isGroupItem(i)
-            ? { ...i, children: [...i.children, dragged] }
-            : { id: groupId, type: 'group' as const, title: 'Reward & Bonuses', children: [i, dragged] };
-        }));
+  /* Apply a resolved drop — runs exactly once, on release. Nothing mutates
+   * while dragging (the indicator carries the preview), so a cancelled drag
+   * needs no rollback: there is nothing to roll back. */
+  const commitDrop = (draggedId: string, target: DropTarget) => {
+    if (target.kind === 'inside') {
+      const dragged = findItem(draggedId);
+      const targetItem = findItem(target.targetId);
+      if (!dragged || isGroupItem(dragged) || !targetItem) return;
+      const groupId = isGroupItem(targetItem) ? targetItem.id : `group-${groupSeq.current++}`;
+      setItems((prev) => removeEverywhere(prev, draggedId).map((i) => {
+        if (i.id !== target.targetId) return i;
+        return isGroupItem(i)
+          ? { ...i, children: [dragged, ...i.children] }
+          : { id: groupId, type: 'group' as const, title: 'Reward & Bonuses', children: [i, dragged] };
+      }));
       setGroupOpen((prev) => new Set(prev).add(groupId));
-    } else {
-      // reorder — also extracts group children back to the top level, and is
-      // the fallback for full groups and incompatible targets
-      setItems((prev) => {
-        const without = removeEverywhere(prev, dragId);
-        let to = without.findIndex((i) => i.id === target.id);
-        if (to === -1 && isGroupItem(target)) {
-          // the target group unwrapped when the dragged child left it —
-          // drop where the remaining child now sits
-          const remaining = target.children.find((c) => c.id !== dragId);
-          if (remaining) to = without.findIndex((i) => i.id === remaining.id);
-        }
-        if (to === -1) return prev;
-        const next = [...without];
-        next.splice(to, 0, dragged);
-        return next;
-      });
+      return;
     }
-    resetDrag();
+
+    setItems((prev) => {
+      const dragged = prev.reduce<TemplateItem | undefined>((found, item) => {
+        if (found) return found;
+        if (item.id === draggedId) return item;
+        return isGroupItem(item) ? item.children.find((c) => c.id === draggedId) : undefined;
+      }, undefined);
+      if (!dragged) return prev;
+
+      const currentGroup = prev.find(
+        (i): i is SectionGroupItem => isGroupItem(i) && i.children.some((c) => c.id === draggedId),
+      );
+
+      /* Reordering within the SAME group splices that group's children in
+       * place — routing through removeEverywhere would unwrap a 2-member
+       * group the moment its size dipped to 1. */
+      if (target.kind === 'group' && currentGroup?.id === target.groupId) {
+        return prev.map((i) => {
+          if (i.id !== target.groupId || !isGroupItem(i)) return i;
+          const children = i.children.filter((c) => c.id !== draggedId);
+          const idx = target.beforeId ? children.findIndex((c) => c.id === target.beforeId) : -1;
+          const next = [...children];
+          next.splice(idx === -1 ? next.length : idx, 0, dragged as Section);
+          return { ...i, children: next };
+        });
+      }
+
+      const without = removeEverywhere(prev, draggedId);
+
+      if (target.kind === 'group') {
+        return without.map((i) => {
+          if (i.id !== target.groupId || !isGroupItem(i)) return i;
+          if (i.children.length >= MAX_GROUP_SIZE) return i;
+          const idx = target.beforeId ? i.children.findIndex((c) => c.id === target.beforeId) : -1;
+          const next = [...i.children];
+          next.splice(idx === -1 ? next.length : idx, 0, dragged as Section);
+          return { ...i, children: next };
+        });
+      }
+
+      const idx = target.beforeId ? without.findIndex((i) => i.id === target.beforeId) : -1;
+      const next = [...without];
+      next.splice(idx === -1 ? next.length : idx, 0, dragged);
+      return next;
+    });
   };
-  const handleDragEnd = () => resetDrag();
+
+  const treeDrag = useOfferTreeDrag({
+    scrollContainerRef: treeRef,
+    getItems: () => items,
+    isGroupId: (id) => { const i = items.find((x) => x.id === id); return !!i && isGroupItem(i); },
+    getChildIds: (groupId) => {
+      const g = items.find((i) => i.id === groupId);
+      return g && isGroupItem(g) ? g.children.map((c) => c.id) : [];
+    },
+    isGroupOpen: (id) => groupOpen.has(id),
+    isGroupableMember: (id) => GROUPABLE_TYPES.includes(id),
+    canNestInto: (draggedId, targetId) => {
+      const t = findItem(targetId);
+      return !!t && canCreateGroup(draggedId, t);
+    },
+    onAutoExpand: (id) => setGroupOpen((prev) => new Set(prev).add(id)),
+    onCommit: commitDrop,
+    orderSignature: items
+      .map((i) => (isGroupItem(i) ? `${i.id}(${i.children.map((c) => c.id).join(',')})` : i.id))
+      .join('|'),
+  });
+
+  const beginDrag = (id: string) => (e: React.PointerEvent) => treeDrag.startDrag(id)(e);
+
+  /* ── Live slot ──
+   * `dropTarget` says where the list should open. Exactly one gap exists at
+   * a time; it matches the dragged row's height, so the opening is literally
+   * the space the block will occupy. */
+  const dropTarget = treeDrag.target;
+
+  const gapAt = (rowId: string, edge: 'before' | 'after', inGroup: boolean): boolean =>
+    !!dropTarget
+    && dropTarget.kind !== 'inside'
+    && dropTarget.anchorId === rowId
+    && dropTarget.edge === edge
+    && (dropTarget.kind === 'group') === inGroup;
+
+  const nestAt = (rowId: string): boolean =>
+    dropTarget?.kind === 'inside' && dropTarget.targetId === rowId;
+
+  /* One element, so hiding it during measurement removes its full layout
+   * contribution (an indent wrapper would leave residual padding behind).
+   * `data-drag-gap` is how the engine finds it to collapse it while
+   * measuring — see measureRows. */
+  const dragGap = (indent: boolean) => (
+    <div
+      data-drag-gap=""
+      className={`${styles.dragGap} ${indent ? styles.dragGapIndent : ''}`}
+      style={{ height: treeDrag.gapSize }}
+    />
+  );
+
+  /* The dragged block, detached from the document and following the cursor.
+   * Positioned by the engine writing `transform` directly each frame. */
+  const dragLayer = () => {
+    const dragged = treeDrag.dragId ? findItem(treeDrag.dragId) : null;
+    if (!dragged) return null;
+    const label = isGroupItem(dragged) ? dragged.title : dragged.label;
+    const Icon = isGroupItem(dragged) ? Folder : sectionIconFor(dragged.id);
+    return (
+      <div
+        ref={treeDrag.registerLayer}
+        className={styles.dragLayer}
+        style={{ width: treeDrag.dragWidth, height: treeDrag.gapSize }}
+      >
+        <GripVertical size={14} strokeWidth={1.75} className={styles.dragLayerGrip} />
+        <Icon size={14} strokeWidth={1.75} className={styles.dragLayerIcon} />
+        <span className={styles.dragLayerLabel}>{label}</span>
+      </div>
+    );
+  };
 
   const toggle = (id: string) =>
     setExpanded((prev) => {
@@ -542,16 +673,19 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     const isActive   = activeId === section.id;
     const hasBlocks  = section.blocks.length > 0;
     const isHidden   = hidden.has(section.id);
-    const isDragging = dragId === section.id;
+    /* The dragged block rides the floating layer instead, so it must not
+     * occupy the list layout — the gap stands in for it. */
+    const isDragSource = treeDrag.isDragging && treeDrag.dragId === section.id;
     const isFocused  = hoveredSectionId === section.id && !isActive;
-    const isGroupTarget = dragOver === section.id && dragMode === 'group' && !isDragging;
+    const isGroupTarget = nestAt(section.id) && !isDragSource;
     const isGroupPreview = groupPreviewIds.includes(section.id);
 
     return (
-      <div key={section.id}>
+      <div key={section.id} style={isDragSource ? { display: 'none' } : undefined}>
         <div
           data-section-id={section.id}
-          className={`${styles.sectionRow} ${isActive ? styles.sectionRowActive : ''} ${isFocused ? styles.sectionRowFocused : ''} ${isGroupTarget ? styles.sectionRowGroupTarget : ''} ${isGroupPreview ? styles.sectionRowGroupPreview : ''} ${opts.draggable ? styles.sectionRowHoverable : ''} ${isDragging ? styles.sectionRowDragging : ''}`}
+          ref={opts.draggable ? treeDrag.registerRow(section.id) : undefined}
+          className={`${styles.sectionRow} ${isActive ? styles.sectionRowActive : ''} ${isFocused ? styles.sectionRowFocused : ''} ${isGroupTarget ? styles.sectionRowGroupTarget : ''} ${isGroupPreview ? styles.sectionRowGroupPreview : ''} ${opts.draggable ? styles.sectionRowHoverable : ''}`}
           onMouseEnter={() => setHoveredSection(section.id, 'drawer')}
           onMouseLeave={() => setHoveredSection(null)}
           onClick={() => {
@@ -573,9 +707,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           {/* Icon: per section type (PanelTop / PanelBottom / Square), GripVertical on hover (draggable rows) */}
           <span
             className={`${styles.sectionIconWrap} ${isHidden ? styles.sectionIconHidden : ''}`}
-            draggable={opts.draggable}
-            onDragStart={opts.draggable ? (e) => handleDragStart(e, section.id) : undefined}
-            onDragEnd={opts.draggable ? handleDragEnd : undefined}
+            onPointerDown={opts.draggable ? beginDrag(section.id) : undefined}
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {
@@ -586,8 +718,18 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           </span>
           <span className={`${styles.sectionLabel} ${isHidden ? styles.sectionLabelHidden : ''}`}>
             {section.label}
-            {NEW_BLOCKS.includes(section.id) && !isActive && (
-              <Badge variant="success" className="ml-1.5 px-1.5 py-1 text-[10px] align-middle bg-[#eef2ff] text-[#4f46e5]">New</Badge>
+            {NEW_BLOCKS.includes(section.id) && (
+              /* The badge's own tint is a near-match for the active row's
+               * violet-50 fill, so on a selected row it drops the fill
+               * entirely and reads as plain indigo text. */
+              <Badge
+                variant="success"
+                className={`ml-1.5 px-1.5 py-1 text-[10px] align-middle text-[#4f46e5] ${
+                  isActive ? 'bg-transparent' : 'bg-[#eef2ff]'
+                }`}
+              >
+                New
+              </Badge>
             )}
           </span>
           {opts.actions && (
@@ -596,16 +738,22 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                 <span className={styles.groupActionSlot}>
                   {/* Group dropdown (Figma 153-3958) — lists compatible targets */}
                   <DropdownMenu onOpenChange={(open) => { if (!open) setGroupPreviewIds([]); }}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className={`${styles.groupActionBtn} ${styles.groupActionBtnHoverOnly}`}
-                        onClick={(e) => e.stopPropagation()}
-                        aria-label={`Group ${section.label}`}
-                        title={`Group ${section.label}`}
-                      >
-                        <Combine size={13} strokeWidth={1.75} />
-                      </button>
-                    </DropdownMenuTrigger>
+                    {/* Tooltip wraps the dropdown trigger (Radix's documented
+                      * composition) so both forward their props to the button. */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            className={`${styles.groupActionBtn} ${styles.groupActionBtnHoverOnly}`}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={`Group ${section.label}`}
+                          >
+                            <Combine size={13} strokeWidth={1.75} />
+                          </button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={6}>Group</TooltipContent>
+                    </Tooltip>
                     <DropdownMenuContent align="start">
                       {groupTargetsFor(section.id).map((target) => (
                         <DropdownMenuItem
@@ -645,20 +793,30 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                   </DropdownMenu>
                 </span>
               )}
-              <button
-                className={`${styles.eyeBtn} ${isHidden ? styles.eyeBtnVisible : ''}`}
-                onClick={(e) => { e.stopPropagation(); toggleHidden(section.id); }}
-                aria-label={isHidden ? 'Show section' : 'Hide section'}
-              >
-                {isHidden ? <EyeOff size={13} strokeWidth={1.75} /> : <Eye size={13} strokeWidth={1.75} />}
-              </button>
-              <button
-                className={styles.deleteBtn}
-                onClick={(e) => { e.stopPropagation(); deleteSection(section.id); }}
-                aria-label="Delete section"
-              >
-                <Trash2 size={13} strokeWidth={1.75} />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={`${styles.eyeBtn} ${isHidden ? styles.eyeBtnVisible : ''}`}
+                    onClick={(e) => { e.stopPropagation(); toggleHidden(section.id); }}
+                    aria-label={isHidden ? 'Show section' : 'Hide section'}
+                  >
+                    {isHidden ? <EyeOff size={13} strokeWidth={1.75} /> : <Eye size={13} strokeWidth={1.75} />}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={6}>{isHidden ? 'Show' : 'Hide'}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={styles.deleteBtn}
+                    onClick={(e) => { e.stopPropagation(); deleteSection(section.id); }}
+                    aria-label="Delete section"
+                  >
+                    <Trash2 size={13} strokeWidth={1.75} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={6}>Delete</TooltipContent>
+              </Tooltip>
             </>
           )}
         </div>
@@ -666,22 +824,43 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         {/* Blocks */}
         {isExpanded && (
           <div className={styles.blockList}>
-            {section.blocks.map((block) => (
-              <div
-                key={block.id}
-                className={`${styles.blockRow} ${activeId === block.id ? styles.blockRowActive : ''}`}
-                onClick={() => {
-                  setActiveId(block.id);
-                  onSectionActivate?.(block.id, block.label);
-                }}
-              >
-                <block.icon size={14} strokeWidth={1.75} className={`${styles.blockIcon} ${isHidden ? styles.blockIconHidden : ''}`} />
-                <span className={`${styles.blockLabel} ${isHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
-                {block.subtitle && (
-                  <span className={`${styles.blockSubtitle} ${isHidden ? styles.blockLabelHidden : ''}`}>– {block.subtitle}</span>
-                )}
-              </div>
-            ))}
+            {section.blocks.map((block) => {
+              if (block.toggleOnly) {
+                const blockHidden = hidden.has(block.id);
+                return (
+                  <div
+                    key={block.id}
+                    className={`${styles.blockRow} ${styles.blockRowToggleOnly}`}
+                  >
+                    <block.icon size={14} strokeWidth={1.75} className={`${styles.blockIcon} ${blockHidden ? styles.blockIconHidden : ''}`} />
+                    <span className={`${styles.blockLabel} ${blockHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
+                    <button
+                      className={`${styles.eyeBtn} ${blockHidden ? styles.eyeBtnVisible : ''}`}
+                      onClick={(e) => { e.stopPropagation(); toggleHidden(block.id); }}
+                      aria-label={blockHidden ? `Show ${block.label}` : `Hide ${block.label}`}
+                    >
+                      {blockHidden ? <EyeOff size={13} strokeWidth={1.75} /> : <Eye size={13} strokeWidth={1.75} />}
+                    </button>
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={block.id}
+                  className={`${styles.blockRow} ${activeId === block.id ? styles.blockRowActive : ''}`}
+                  onClick={() => {
+                    setActiveId(block.id);
+                    onSectionActivate?.(block.id, block.label);
+                  }}
+                >
+                  <block.icon size={14} strokeWidth={1.75} className={`${styles.blockIcon} ${isHidden ? styles.blockIconHidden : ''}`} />
+                  <span className={`${styles.blockLabel} ${isHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
+                  {block.subtitle && (
+                    <span className={`${styles.blockSubtitle} ${isHidden ? styles.blockLabelHidden : ''}`}>– {block.subtitle}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -692,14 +871,18 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   const renderGroup = (item: SectionGroupItem) => {
     const isOpen     = groupOpen.has(item.id);
     const isActive   = activeId === item.id;
-    const isDragging = dragId === item.id;
-    const isGroupTarget = (dragOver === item.id && dragMode === 'group' && !isDragging)
+    const isDragSource = treeDrag.isDragging && treeDrag.dragId === item.id;
+    const isGroupTarget = (nestAt(item.id) && !isDragSource)
       || groupPreviewIds.includes(item.id);
 
     return (
-      <div className={`${styles.groupContainer} ${isGroupTarget ? styles.groupContainerTarget : ''}`}>
+      <div
+        className={`${styles.groupContainer} ${isGroupTarget ? styles.groupContainerTarget : ''}`}
+        style={isDragSource ? { display: 'none' } : undefined}
+      >
         <div
-          className={`${styles.sectionRow} ${styles.groupHeader} ${isActive ? styles.sectionRowActive : ''} ${styles.sectionRowHoverable} ${isDragging ? styles.sectionRowDragging : ''}`}
+          ref={treeDrag.registerRow(item.id)}
+          className={`${styles.sectionRow} ${styles.groupHeader} ${isActive ? styles.sectionRowActive : ''} ${styles.sectionRowHoverable}`}
           onClick={() => { setActiveId(item.id); toggleGroup(item.id); }}
         >
           <button
@@ -713,9 +896,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           </button>
           <span
             className={styles.sectionIconWrap}
-            draggable
-            onDragStart={(e) => handleDragStart(e, item.id)}
-            onDragEnd={handleDragEnd}
+            onPointerDown={beginDrag(item.id)}
             onClick={(e) => e.stopPropagation()}
           >
             <Folder size={14} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
@@ -724,30 +905,49 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           <span className={styles.sectionLabel}>{item.title}</span>
           <span className={styles.groupActionSlot}>
             {shouldShowGroupAction(activeId, item) && (
-              <button
-                className={styles.groupActionBtn}
-                onClick={(e) => { e.stopPropagation(); groupWith(item); }}
-                aria-label={`Add to ${item.title}`}
-                title={`Add to ${item.title}`}
-              >
-                <Combine size={13} strokeWidth={1.75} />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={styles.groupActionBtn}
+                    onClick={(e) => { e.stopPropagation(); groupWith(item); }}
+                    aria-label={`Add to ${item.title}`}
+                  >
+                    <Combine size={13} strokeWidth={1.75} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={6}>{`Add to ${item.title}`}</TooltipContent>
+              </Tooltip>
             )}
           </span>
-          <button
-            className={`${styles.groupActionBtn} ${styles.groupActionBtnHoverOnly}`}
-            onClick={(e) => { e.stopPropagation(); ungroup(item.id); }}
-            aria-label={`Ungroup ${item.title}`}
-            title="Ungroup"
-          >
-            <Ungroup size={13} strokeWidth={1.75} />
-          </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className={`${styles.groupActionBtn} ${styles.groupActionBtnHoverOnly}`}
+                  onClick={(e) => { e.stopPropagation(); ungroup(item.id); }}
+                  aria-label={`Ungroup ${item.title}`}
+                >
+                  <Ungroup size={13} strokeWidth={1.75} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" sideOffset={6}>Ungroup</TooltipContent>
+            </Tooltip>
         </div>
+        {/* Collapsed group being nested into: open an indented slot under the
+          * header right away, and keep it once auto-expand fires. */}
+        {!isOpen && nestAt(item.id) && dragGap(true)}
         {isOpen && (
           <div className={styles.groupChildren}>
+            {/* Nested slot pushes only this parent's children apart. */}
+            {nestAt(item.id) && dragGap(false)}
             {item.children
               .filter((c) => !deleted.has(c.id))
-              .map((c) => renderSectionRow(c, { actions: true, draggable: true }))}
+              .map((c) => (
+                <div key={c.id}>
+                  {gapAt(c.id, 'before', true) && dragGap(false)}
+                  {renderSectionRow(c, { actions: true, draggable: true })}
+                  {gapAt(c.id, 'after', true) && dragGap(false)}
+                </div>
+              ))}
           </div>
         )}
       </div>
@@ -755,26 +955,32 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   };
 
   const topContent = (
+    /* One provider for the whole tree — every row action below uses a bare
+     * <Tooltip>, so they share this delay instead of each mounting its own. */
+    <TooltipProvider delayDuration={150}>
     <div className={styles.tree} ref={treeRef}>
-      {TREE.map((group) => (
+      {TREE.map((group) => {
+        const isOfferListEmpty = group.id === 'template-group'
+          && items.filter((item) => isGroupItem(item) || !deleted.has(item.id)).length === 0;
+        return (
         <div key={group.id} className={styles.treeGroup}>
           <p className={styles.treeGroupLabel}>
             {group.label}
             {group.id === 'template-group' && (
-              <TooltipProvider delayDuration={150}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      className={styles.treeGroupAddBtn}
-                      aria-label="Add block"
-                      onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); }}
-                    >
-                      <Plus size={13} strokeWidth={2} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" sideOffset={6}>Add New Block</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className={styles.treeGroupAddBtn}
+                    aria-label="Add block"
+                    onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); }}
+                  >
+                    {/* Figma 191:2608 — 12px glyph, 1.2 stroke on a 12px
+                      * frame (= 2.4 at lucide's 24 viewBox), indigo-700. */}
+                    <Plus size={12} strokeWidth={2.4} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={6}>Add New Block</TooltipContent>
+              </Tooltip>
             )}
           </p>
 
@@ -788,22 +994,27 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                       <p className={styles.treeGroupEmptySubtitle}>
                         Add a block to start building your offer.
                       </p>
+                      <button
+                        className={styles.treeGroupEmptyAddBtn}
+                        onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); }}
+                      >
+                        <CirclePlus size={14} strokeWidth={1.75} />
+                        Add block
+                      </button>
                     </div>
                   );
                 }
                 return visibleItems.map((item) => (
-                  <div
-                    key={item.id}
-                    onDragOver={(e) => handleDragOver(e, item)}
-                    onDrop={() => handleDrop(item)}
-                  >
-                    {/* Insertion line above this item while reordering */}
-                    {dragOver === item.id && dragId !== item.id && dragMode === 'reorder' && (
-                      <div className={styles.dragDivider} />
-                    )}
+                  <div key={item.id}>
+                    {gapAt(item.id, 'before', false) && dragGap(false)}
                     {isGroupItem(item)
                       ? renderGroup(item)
                       : renderSectionRow(item, { actions: true, draggable: true })}
+                    {/* Loose section being nested into — the group doesn't
+                      * exist yet, so the indented slot renders here rather
+                      * than in renderGroup's children. */}
+                    {!isGroupItem(item) && nestAt(item.id) && dragGap(true)}
+                    {gapAt(item.id, 'after', false) && dragGap(false)}
                   </div>
                 ));
               })()
@@ -812,9 +1023,12 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
 
           {group.id === 'template-group' && (
             <AddBlockModal open={addOpen} onOpenChange={handleAddOpenChange} onInsert={insertBlock} anchorEl={addAnchor} usedIds={usedBlockIds}>
+              {/* The empty-state card already has its own "Add block" CTA —
+               * this row would just be a redundant duplicate below it, so it
+               * stays mounted (Radix's Slot needs a child) but hidden. */}
               <div
                 className={`${styles.sectionRow} ${addOpen && !addAnchor ? styles.sectionRowForcedHover : ''}`}
-                style={{ color: '#4f46e5' }}
+                style={{ color: '#4f46e5', display: isOfferListEmpty ? 'none' : undefined }}
                 onClick={() => setAddAnchor(null)}
               >
                 <span style={{ width: 18, height: 18, flexShrink: 0 }} />
@@ -824,8 +1038,11 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
             </AddBlockModal>
           )}
         </div>
-      ))}
+        );
+      })}
+      {treeDrag.isDragging && dragLayer()}
     </div>
+    </TooltipProvider>
   );
 
   return (

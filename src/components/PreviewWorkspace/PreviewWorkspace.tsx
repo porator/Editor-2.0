@@ -120,8 +120,8 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
-  // First-time users see the animated design-system skeleton for 3s.
-  const loading = useFirstOpen(3000);
+  // First-time users see the animated skeleton once, for 6s.
+  const loading = useFirstOpen(6000);
 
   useEffect(() => {
     const el = canvasRef.current;
@@ -165,11 +165,13 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
         </div>
       )}
 
-      <div className={styles.modeChip}>
-        <span>{{ mobile: 'Mobile', tablet: 'Tablet', desktop: 'Desktop' }[previewMode]}</span>
-        {previewMode === 'desktop' && <span className={styles.modeChipScale}>{Math.round(scale * 100)}%</span>}
-        {previewMode === 'tablet'  && <span className={styles.modeChipScale}>768px</span>}
-      </div>
+      {previewMode !== 'mobile' && (
+        <div className={styles.modeChip}>
+          <span>{{ tablet: 'Tablet', desktop: 'Desktop' }[previewMode]}</span>
+          {previewMode === 'desktop' && <span className={styles.modeChipScale}>{Math.round(scale * 100)}%</span>}
+          {previewMode === 'tablet'  && <span className={styles.modeChipScale}>768px</span>}
+        </div>
+      )}
     </div>
   );
 }
