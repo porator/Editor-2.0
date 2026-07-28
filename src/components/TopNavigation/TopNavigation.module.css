@@ -64,29 +64,13 @@
   flex-shrink: 0;
 }
 
+/* Bare icon pair beside the nav tabs — no pill container, so undo/redo read
+ * as plain icon buttons like the tab icons. Colour, hover and the 0.35
+ * disabled dim all inherit the shared .iconBtn base. */
 .undoRedoGroup {
   display: flex;
   align-items: center;
-  gap: 2px;
-  background: var(--color-muted);
-  border-radius: var(--radius-lg);
-  padding: 2px;
-}
-
-/* Active undo/redo icon = indigo; disabled = light gray */
-.undoRedoGroup .iconBtn {
-  color: var(--color-indigo-600);
-}
-
-.undoRedoGroup .iconBtn:disabled {
-  color: var(--color-gray-300, #d1d5db);
-  opacity: 1;
-  cursor: default;
-}
-
-.undoRedoGroup .iconBtn:not(:disabled):hover {
-  background: var(--color-gray-200);
-  color: var(--color-indigo-700);
+  gap: 8px;
 }
 
 .previewToggle {
@@ -226,13 +210,3 @@
   padding: 2px;
 }
 
-.iconBtnActive {
-  background: var(--color-white);
-  color: var(--color-indigo-600);
-  box-shadow: var(--shadow-xs);
-}
-
-.iconBtnActive:hover {
-  background: var(--color-white);
-  color: var(--color-indigo-600);
-}

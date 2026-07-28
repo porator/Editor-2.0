@@ -15,6 +15,10 @@ import {
 import {
   Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
 } from '../ds/composites/Tooltip';
+import {
+  Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogClose,
+} from '../ds/composites/Dialog';
+import { Button } from '../ds/atoms/Button';
 import { useFocusState } from '../../hooks/useSectionFocus';
 import { useGrouping } from '../../hooks/useGrouping';
 import { useFirstOpen } from '../../hooks/useFirstOpen';
@@ -270,6 +274,9 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   // tracks which sections are hidden (eye toggle)
   const [hidden, setHidden] = useState<Set<string>>(new Set());
+  // Offer pending deletion — drives the confirmation dialog. Deleting is
+  // gated behind a confirm rather than firing on the trash click.
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; label: string } | null>(null);
 
   const toggleHidden = (id: string) =>
     setHidden((prev) => {
@@ -826,7 +833,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                 <TooltipTrigger asChild>
                   <button
                     className={styles.deleteBtn}
-                    onClick={(e) => { e.stopPropagation(); deleteSection(section.id); }}
+                    onClick={(e) => { e.stopPropagation(); setPendingDelete({ id: section.id, label: section.label }); }}
                     aria-label="Delete section"
                   >
                     <Trash2 size={13} strokeWidth={1.75} />
@@ -1119,6 +1126,42 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           </div>
         </>
       )}
+
+      {/* Delete confirmation (Figma 200:4918). White blurred scrim per spec.
+        * Deleting only marks the offer removed — it can be re-added from the
+        * Add offer panel — so the confirm is a plain indigo button, not a
+        * destructive red one. */}
+      <Dialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => { if (!open) setPendingDelete(null); }}
+      >
+        <DialogContent
+          overlayClassName="bg-white/60 backdrop-blur-[2px]"
+          className="max-w-[360px] gap-4 rounded-[10px] p-6"
+        >
+          <DialogHeader className="gap-1.5 text-left sm:text-left">
+            <DialogTitle>Delete “{pendingDelete?.label}”?</DialogTitle>
+            <DialogDescription>
+              This removes the block from your webstore. You can add it again from the Add offer panel.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:space-x-0">
+            <DialogClose asChild>
+              <Button variant="outline" size="md">Cancel</Button>
+            </DialogClose>
+            <Button
+              variant="default"
+              size="md"
+              onClick={() => {
+                if (pendingDelete) deleteSection(pendingDelete.id);
+                setPendingDelete(null);
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

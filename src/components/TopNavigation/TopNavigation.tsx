@@ -77,6 +77,37 @@ export default function TopNavigation({ state, onStateChange }: Props) {
               </Tooltip>
             ))}
           </nav>
+
+          {/* Undo / Redo — bare icon buttons matching the tab icons. */}
+          <div className={styles.divider} aria-hidden />
+          <div className={styles.undoRedoGroup}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className={styles.iconBtn}
+                  disabled={!state.canUndo}
+                  aria-label="Undo"
+                  onClick={() => set({ canUndo: false, canRedo: true })}
+                >
+                  <Undo2 size={16} strokeWidth={1.75} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>Undo</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className={styles.iconBtn}
+                  disabled={!state.canRedo}
+                  aria-label="Redo"
+                  onClick={() => set({ canRedo: false, canUndo: true })}
+                >
+                  <Redo2 size={16} strokeWidth={1.75} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={8}>Redo</TooltipContent>
+            </Tooltip>
+          </div>
         </TooltipProvider>
       </div>
 
@@ -85,42 +116,19 @@ export default function TopNavigation({ state, onStateChange }: Props) {
         <span className={styles.templateName}>{state.templateName}</span>
       </div>
 
-      {/* ── Right: Undo/Redo + Preview toggle + Save ── */}
+      {/* ── Right: Preview toggle + Save ── */}
       <div className={styles.rightGroup}>
 
-        {/* Undo / Redo — bg-muted pill, gap-2px inside */}
-        <div className={styles.undoRedoGroup}>
-          <button
-            className={styles.iconBtn}
-            disabled={!state.canUndo}
-            title="Undo"
-            aria-label="Undo"
-            onClick={() => set({ canUndo: false, canRedo: true })}
-          >
-            <Undo2 size={16} strokeWidth={1.75} />
-          </button>
-          <button
-            className={styles.iconBtn}
-            disabled={!state.canRedo}
-            title="Redo"
-            aria-label="Redo"
-            onClick={() => set({ canRedo: false, canUndo: true })}
-          >
-            <Redo2 size={16} strokeWidth={1.75} />
-          </button>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* Device preview selector — cycles Desktop → Tablet → Mobile */}
-          <button
-            className={`${styles.iconBtn} ${styles.iconBtnActive}`}
-            title={`Switch to ${next.label}`}
-            aria-label={`Current: ${current.label}. Click to switch to ${next.label}`}
-            onClick={() => set({ previewMode: next.mode })}
-          >
-            <CycleIcon size={16} strokeWidth={1.75} />
-          </button>
-        </div>
+        {/* Device preview selector — cycles Desktop → Tablet → Mobile.
+          * Bare icon button, matching the nav tab icons. */}
+        <button
+          className={styles.iconBtn}
+          title={`Switch to ${next.label}`}
+          aria-label={`Current: ${current.label}. Click to switch to ${next.label}`}
+          onClick={() => set({ previewMode: next.mode })}
+        >
+          <CycleIcon size={16} strokeWidth={1.75} />
+        </button>
 
         {/* Save */}
         <Button size="sm" aria-label="Save template">Save</Button>

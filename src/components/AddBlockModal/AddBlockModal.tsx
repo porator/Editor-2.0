@@ -116,7 +116,7 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
                 <div key={section.category} className="mb-3 last:mb-0">
                   <div
                     role="presentation"
-                    className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.06em]"
+                    className="px-2 pb-1 pt-2 text-[11px] font-semibold"
                     style={{ color: 'var(--color-foreground)' }}
                   >
                     {section.category}
