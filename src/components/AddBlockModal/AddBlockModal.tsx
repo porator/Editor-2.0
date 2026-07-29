@@ -116,8 +116,11 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
                 <div key={section.category} className="mb-3 last:mb-0">
                   <div
                     role="presentation"
-                    className="px-2 pb-1 pt-2 text-[11px] font-semibold"
-                    style={{ color: 'var(--color-foreground)' }}
+                    /* pl-5 (20px) aligns the heading with the offer rows'
+                     * left padding, so "Retention" lines up with the names
+                     * below it. */
+                    className="pl-5 pr-2 pb-1 pt-2 text-xs font-semibold"
+                    style={{ color: 'var(--color-muted-fg)' }}
                   >
                     {section.category}
                   </div>

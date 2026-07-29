@@ -679,8 +679,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         className={styles.dragLayer}
         style={{ width: treeDrag.dragWidth, height: treeDrag.gapSize }}
       >
-        <GripVertical size={10} strokeWidth={1.75} className={styles.dragLayerGrip} />
-        <Icon size={10} strokeWidth={1.75} className={styles.dragLayerIcon} />
+        <GripVertical size={13} strokeWidth={1.75} className={styles.dragLayerGrip} />
+        <Icon size={13} strokeWidth={1.75} className={styles.dragLayerIcon} />
         <span className={styles.dragLayerLabel}>{label}</span>
       </div>
     );
@@ -741,9 +741,9 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           >
             {(() => {
               const SectionIcon = sectionIconFor(section.id);
-              return <SectionIcon size={10} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />;
+              return <SectionIcon size={13} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />;
             })()}
-            {opts.draggable && <GripVertical size={10} strokeWidth={1.75} className={styles.sectionIconGrip} />}
+            {opts.draggable && <GripVertical size={13} strokeWidth={1.75} className={styles.sectionIconGrip} />}
           </span>
           <span className={`${styles.sectionLabel} ${isHidden ? styles.sectionLabelHidden : ''}`}>
             {section.label}
@@ -856,7 +856,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                     key={block.id}
                     className={`${styles.blockRow} ${styles.blockRowToggleOnly}`}
                   >
-                    <block.icon size={10} strokeWidth={1.75} className={`${styles.blockIcon} ${blockHidden ? styles.blockIconHidden : ''}`} />
+                    <block.icon size={13} strokeWidth={1.75} className={`${styles.blockIcon} ${blockHidden ? styles.blockIconHidden : ''}`} />
                     <span className={`${styles.blockLabel} ${blockHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
                     <button
                       className={`${styles.eyeBtn} ${blockHidden ? styles.eyeBtnVisible : ''}`}
@@ -877,7 +877,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                     onSectionActivate?.(block.id, block.label);
                   }}
                 >
-                  <block.icon size={10} strokeWidth={1.75} className={`${styles.blockIcon} ${isHidden ? styles.blockIconHidden : ''}`} />
+                  <block.icon size={13} strokeWidth={1.75} className={`${styles.blockIcon} ${isHidden ? styles.blockIconHidden : ''}`} />
                   <span className={`${styles.blockLabel} ${isHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
                   {block.subtitle && (
                     <span className={`${styles.blockSubtitle} ${isHidden ? styles.blockLabelHidden : ''}`}>– {block.subtitle}</span>
@@ -923,8 +923,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
             onPointerDown={beginDrag(item.id)}
             onClick={(e) => e.stopPropagation()}
           >
-            <Folder size={10} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
-            <GripVertical size={10} strokeWidth={1.75} className={styles.sectionIconGrip} />
+            <Folder size={13} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
+            <GripVertical size={13} strokeWidth={1.75} className={styles.sectionIconGrip} />
           </span>
           <span className={styles.sectionLabel}>{item.title}</span>
           <span className={styles.groupActionSlot}>
@@ -1030,7 +1030,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                         className={styles.treeGroupEmptyAddBtn}
                         onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); }}
                       >
-                        <CirclePlus size={14} strokeWidth={1.75} />
+                        <CirclePlus size={13} strokeWidth={1.75} />
                         Add block
                       </button>
                     </div>
@@ -1064,7 +1064,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                 onClick={() => setAddAnchor(null)}
               >
                 <span style={{ width: 18, height: 18, flexShrink: 0 }} />
-                <CirclePlus size={14} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                <CirclePlus size={13} strokeWidth={1.75} style={{ flexShrink: 0 }} />
                 <span className={styles.sectionLabel} style={{ color: '#4f46e5' }}>Add block</span>
               </div>
             </AddBlockModal>
