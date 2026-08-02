@@ -1136,7 +1136,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
       >
         <DialogContent
           overlayClassName="bg-white/60 backdrop-blur-[2px]"
-          className="max-w-[360px] gap-4 rounded-[10px] p-6"
+          className="max-w-[360px] gap-5 rounded-[10px] p-6"
         >
           <DialogHeader className="gap-1.5 text-left sm:text-left">
             <DialogTitle className="text-[16px]">Delete “{pendingDelete?.label}”?</DialogTitle>

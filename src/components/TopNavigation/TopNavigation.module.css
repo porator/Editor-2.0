@@ -4,8 +4,10 @@
   justify-content: space-between;
   height: var(--top-bar-height);
   padding: 10px 21px;
+  margin: 10px 10px 0 10px;
   background: var(--color-white);
-  box-shadow: var(--shadow-top-bar);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
   flex-shrink: 0;
   position: relative;
   z-index: 100;
