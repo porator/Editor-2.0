@@ -97,7 +97,7 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
         aria-label="Add block"
       >
         <div className="border-b border-[#f0f0f0] px-4 py-3">
-          <span className="text-sm font-semibold text-[#171717]">Add offer</span>
+          <span className="text-xs font-semibold text-[#171717]">Add Offer</span>
         </div>
 
         <div className="flex min-h-0 flex-1">
@@ -107,10 +107,10 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
            * max-width when a row's min-content (a long, nowrap label) is
            * wider than the rail — it grows the table instead of clipping.
            * Forcing `display:block` removes table sizing entirely so the
-           * row is capped at 254px and the label's ellipsis can engage.
+           * row is capped at the rail width and the label's ellipsis can engage.
            * Radix sets `display: table` via inline style, which beats a
            * plain class selector — needs `!important` to actually win. */}
-          <ScrollArea className="w-[254px] shrink-0 bg-white [&_[data-radix-scroll-area-viewport]>div]:!block">
+          <ScrollArea className="w-[350px] shrink-0 bg-white [&_[data-radix-scroll-area-viewport]>div]:!block">
             <div className="p-4 pr-5" role="listbox" aria-label="Available blocks">
               {sections.map((section) => (
                 <div key={section.category} className="mb-3 last:mb-0">
