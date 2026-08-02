@@ -1136,12 +1136,12 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
       >
         <DialogContent
           overlayClassName="bg-white/60 backdrop-blur-[2px]"
-          className="max-w-[360px] gap-5 rounded-[10px] p-6"
+          className="max-w-[500px] gap-5 rounded-[20px] sm:rounded-[20px] p-6"
         >
           <DialogHeader className="gap-1.5 text-left sm:text-left">
-            <DialogTitle className="text-[16px]">Delete “{pendingDelete?.label}”?</DialogTitle>
+            <DialogTitle className="text-[16px]">Remove “{pendingDelete?.label}” block from your live store</DialogTitle>
             <DialogDescription>
-              This removes the block from your webstore. You can add it again from the Add offer panel.
+              “{pendingDelete?.label}” is live right now. It won’t be removed until you save — you can undo or cancel anytime before that.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:space-x-0">
@@ -1156,7 +1156,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                 setPendingDelete(null);
               }}
             >
-              Delete
+              Remove
             </Button>
           </DialogFooter>
         </DialogContent>
