@@ -1005,9 +1005,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                     aria-label="Add block"
                     onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); }}
                   >
-                    {/* Figma 191:2608 specifies a 12px glyph; nudged up to 14
-                      * for legibility in the 24px button. strokeWidth stays
-                      * 2.4 so the whole mark scales proportionally. */}
+                    {/* strokeWidth stays 2.4 so the whole mark scales
+                      * proportionally. */}
                     <Plus size={14} strokeWidth={2.4} />
                   </button>
                 </TooltipTrigger>
@@ -1140,18 +1139,18 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
           className="max-w-[360px] gap-4 rounded-[10px] p-6"
         >
           <DialogHeader className="gap-1.5 text-left sm:text-left">
-            <DialogTitle>Delete “{pendingDelete?.label}”?</DialogTitle>
+            <DialogTitle className="text-[16px]">Delete “{pendingDelete?.label}”?</DialogTitle>
             <DialogDescription>
               This removes the block from your webstore. You can add it again from the Add offer panel.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:space-x-0">
             <DialogClose asChild>
-              <Button variant="outline" size="md">Cancel</Button>
+              <Button variant="outline" size="sm">Cancel</Button>
             </DialogClose>
             <Button
               variant="default"
-              size="md"
+              size="sm"
               onClick={() => {
                 if (pendingDelete) deleteSection(pendingDelete.id);
                 setPendingDelete(null);
