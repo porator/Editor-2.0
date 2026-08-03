@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { Search } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Search, CircleCheck } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverAnchor, PopoverContent } from '../ds/composites/Popover';
 import { ScrollArea } from '../ds/composites/ScrollArea';
 import { Input } from '../ds/atoms/Input';
 import { BLOCK_REGISTRY, CATEGORY_ORDER } from './registry';
+import { NewBadge } from '../LeftPanel/NewBadge';
 /* Rows reuse the Sections drawer's classes so UI + states stay identical */
 import treeStyles from '../LeftPanel/LeftPanel.module.css';
 
@@ -55,24 +56,17 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
    * the default preview. */
   const available = BLOCK_REGISTRY.filter((b) => !isUsed(b.id) && matches(b));
 
-  /* Every category renders, in CATEGORY_ORDER; anything with an unlisted
-   * category is appended rather than silently dropped. Filtered-out and empty
-   * categories drop away. */
-  const sections = (() => {
+  /* One flat, filtered list in category order — then a stable sort floats every
+   * already-added (disabled) offer to the very bottom, globally. (No in-list
+   * category titles, so a single list reads cleanest.) */
+  const visibleBlocks = (() => {
     const seen = new Set<string>(CATEGORY_ORDER);
     const extra = BLOCK_REGISTRY.map((b) => b.category).filter((c) => !seen.has(c));
     const order = [...CATEGORY_ORDER, ...Array.from(new Set(extra))];
-    return order
-      .map((category) => ({
-        category,
-        /* Within each section, available offers sit on top and already-added
-         * ones sink to the bottom. Array.sort is stable, so registry order is
-         * preserved inside each of the two groups. */
-        blocks: BLOCK_REGISTRY
-          .filter((b) => b.category === category && matches(b))
-          .sort((a, b) => Number(isUsed(a.id)) - Number(isUsed(b.id))),
-      }))
-      .filter((s) => s.blocks.length > 0);
+    const inOrder = order.flatMap((category) =>
+      BLOCK_REGISTRY.filter((b) => b.category === category && matches(b)),
+    );
+    return inOrder.sort((a, b) => Number(isUsed(a.id)) - Number(isUsed(b.id)));
   })();
 
   const [selectedId, setSelectedId] = useState<string | null>(available[0]?.id ?? null);
@@ -100,6 +94,16 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, activeCategory]);
+
+  /* Freeze the anchor's position at open time. The trigger button lives inside
+   * the scrolling block tree; without this the popover would track it and
+   * scroll away. A virtual anchor with a captured rect keeps the modal put. */
+  const frozenAnchor = useMemo(() => {
+    if (!open || !anchorEl) return null;
+    const rect = anchorEl.getBoundingClientRect();
+    return { getBoundingClientRect: () => rect };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, anchorEl]);
 
   const selected = available.find((b) => b.id === selectedId) ?? null;
   /* Preview follows the hovered row — including disabled ones, so users can
@@ -133,7 +137,7 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
-      {anchorEl && <PopoverAnchor virtualRef={{ current: anchorEl }} />}
+      {frozenAnchor && <PopoverAnchor virtualRef={{ current: frozenAnchor }} />}
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent
         ref={contentRef}
@@ -152,12 +156,12 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
       >
         <div className="flex min-h-0 flex-1">
           {/* Block list rail — pinned search bar above a scrolling list */}
-          <div className="flex w-[350px] shrink-0 flex-col bg-white">
+          <div className="relative flex w-[280px] shrink-0 flex-col bg-white">
             {/* Search bar (DS Input + leading icon). Filters the catalog by
              * name + description; stays fixed while the list scrolls. Horizontal
              * padding matches the list (pl-4 / pr-5) so the field + chips align
              * to the offer rows. */}
-            <div className="pt-3 pb-0 pl-4 pr-5">
+            <div className="pt-3 pb-[10px] pl-4 pr-5">
               {/* Search bar temporarily hidden — flip `false` to `true` to
                * bring it back. Category chips still filter the list. */}
               {false && (
@@ -182,8 +186,8 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
               {/* Category filter chips — combine with the text search. "All"
                * clears the category filter; clicking the active chip also
                * clears it. */}
-              <div className="mt-2.5 flex flex-wrap gap-1.5">
-                {[null, ...categoryList].map((cat) => {
+              <div className="mt-2.5 flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,#000_calc(100%_-_28px),transparent)] [-webkit-mask-image:linear-gradient(to_right,#000_calc(100%_-_28px),transparent)]">
+                {[null, ...categoryList, 'Example 1', 'Example 2', 'Example 3'].map((cat) => {
                   const active = activeCategory === cat;
                   return (
                     <button
@@ -191,7 +195,7 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
                       type="button"
                       onClick={() => setActiveCategory((prev) => (prev === cat ? null : cat))}
                       aria-pressed={active}
-                      className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                      className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
                         active
                           ? 'border-transparent bg-[#f5f3ff] text-[#4f46e5]'
                           : 'border-[#e5e5e5] text-[#737373] hover:bg-[#f5f5f5]'
@@ -213,17 +217,15 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
              * plain class selector — needs `!important` to actually win. */}
             <ScrollArea className="min-h-0 flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block">
             <div className="p-4 pr-5" role="listbox" aria-label="Available blocks">
-              {sections.length === 0 && (
+              {visibleBlocks.length === 0 && (
                 <div className="px-5 py-10 text-center text-xs" style={{ color: 'var(--color-muted-fg)' }}>
                   {query ? <>No offers match “{query}”.</> : 'No offers to show.'}
                 </div>
               )}
-              {/* No in-list category titles — the filter chips are the
-                * category navigation. Sections still group with a gap. */}
-              {sections.map((section) => (
-                <div key={section.category} className="mb-3 last:mb-0">
-                  <div className="space-y-0.5">
-                    {section.blocks.map((block) => {
+              {/* Flat list — chips are the category navigation; disabled
+                * (already-added) offers always sort to the bottom. */}
+              <div className="space-y-0.5">
+                {visibleBlocks.map((block) => {
                       const used = isUsed(block.id);
                       const isSelected = block.id === selectedId;
                       /* Unify hover + selected into one highlighted state: the
@@ -251,7 +253,10 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
                           }}
                         >
                           <span className="flex min-w-0 flex-1 flex-col" style={{ gap: 2 }}>
-                            <span className={treeStyles.sectionLabel}>{block.name}</span>
+                            <span className="flex items-center">
+                              <span className={treeStyles.sectionLabel}>{block.name}</span>
+                              {block.badge && <NewBadge />}
+                            </span>
                             <span
                               className="truncate text-xs"
                               style={{ color: 'var(--color-muted-fg)' }}
@@ -260,21 +265,24 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
                             </span>
                           </span>
                           {used && (
-                            <span
-                              className="shrink-0 whitespace-nowrap text-[10px] font-medium"
-                              style={{ color: 'var(--color-gray-400)', lineHeight: '16px' }}
-                            >
-                              Already added
-                            </span>
+                            <CircleCheck
+                              size={16}
+                              strokeWidth={1.75}
+                              role="img"
+                              aria-label="Already added"
+                              className="shrink-0 self-center"
+                              style={{ marginLeft: 'auto', color: 'var(--color-gray-400)' }}
+                            />
                           )}
                         </div>
                       );
-                    })}
-                  </div>
-                </div>
-              ))}
+                })}
+              </div>
             </div>
             </ScrollArea>
+            {/* Bottom white fader — the list scrolls under it and fades out
+              * cleanly above the modal's rounded bottom edge. */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-white to-transparent" />
           </div>
 
           {/* Live preview canvas — a rounded card floating inside the modal

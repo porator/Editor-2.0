@@ -10,7 +10,9 @@
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
   position: relative;
-  z-index: 100;
+  /* Below the dialog overlay (z-50) so the modal scrim covers the header,
+   * but above the editor body content. */
+  z-index: 40;
   gap: var(--space-4);
 }
 

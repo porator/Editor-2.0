@@ -349,9 +349,12 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   // panel is opened from the group label's "+" button
   const [addOpen, setAddOpen] = useState(false);
   const [addAnchor, setAddAnchor] = useState<HTMLElement | null>(null);
+  /* True when the modal was opened from the bottom "Add block" row (vs the
+   * group-label "+"), so that row keeps its highlight while open. */
+  const [addFromRow, setAddFromRow] = useState(false);
   const handleAddOpenChange = (open: boolean) => {
     setAddOpen(open);
-    if (!open) setAddAnchor(null);
+    if (!open) { setAddAnchor(null); setAddFromRow(false); }
   };
   // Each block type can only be used once, so the Add Offer modal only ever
   // offers ids that aren't currently visible in the tree.
@@ -976,7 +979,14 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
             <Columns2 size={13} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
             <GripVertical size={13} strokeWidth={1.75} className={styles.sectionIconGrip} />
           </span>
-          <span className={styles.sectionLabel}>{groupTitle(item)}</span>
+          {/* Group name truncates in the row, so a tooltip carries the full
+            * list of grouped blocks. */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className={styles.sectionLabel}>{groupTitle(item)}</span>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} className="whitespace-nowrap">{groupTitle(item)}</TooltipContent>
+          </Tooltip>
           <span className={styles.groupActionSlot}>
             {shouldShowGroupAction(activeId, item) && (
               <Tooltip>
@@ -1053,7 +1063,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                   <button
                     className={styles.treeGroupAddBtn}
                     aria-label="Add block"
-                    onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); }}
+                    onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); setAddFromRow(false); }}
                   >
                     {/* strokeWidth stays 2.4 so the whole mark scales
                       * proportionally. */}
@@ -1077,7 +1087,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                       </p>
                       <button
                         className={styles.treeGroupEmptyAddBtn}
-                        onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); }}
+                        onClick={(e) => { setAddAnchor(e.currentTarget); setAddOpen(true); setAddFromRow(false); }}
                       >
                         <CirclePlus size={13} strokeWidth={1.75} />
                         Add block
@@ -1108,9 +1118,11 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                * this row would just be a redundant duplicate below it, so it
                * stays mounted (Radix's Slot needs a child) but hidden. */}
               <div
-                className={`${styles.sectionRow} ${addOpen && !addAnchor ? styles.sectionRowForcedHover : ''}`}
+                className={`${styles.sectionRow} ${addOpen && addFromRow ? styles.sectionRowForcedHover : ''}`}
                 style={{ color: '#4f46e5', display: isOfferListEmpty ? 'none' : undefined }}
-                onClick={() => setAddAnchor(null)}
+                /* Anchor to this row (frozen at open) so the modal stays put
+                 * when the block tree scrolls. */
+                onClick={(e) => { setAddAnchor(e.currentTarget); setAddFromRow(true); }}
               >
                 <span style={{ width: 18, height: 18, flexShrink: 0 }} />
                 <CirclePlus size={13} strokeWidth={1.75} style={{ flexShrink: 0 }} />
@@ -1185,7 +1197,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         onOpenChange={(open) => { if (!open) setPendingDelete(null); }}
       >
         <DialogContent
-          overlayClassName="bg-white/60 backdrop-blur-[2px]"
+          overlayClassName="bg-black/20 backdrop-blur-[2px]"
           className="max-w-[500px] gap-6 rounded-[20px] sm:rounded-[20px] p-9"
         >
           <DialogHeader className="gap-1.5 text-left sm:text-left">

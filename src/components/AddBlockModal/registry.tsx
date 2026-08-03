@@ -110,6 +110,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     description: 'Triggered overlay message',
     preview: PopupPreview,
     keywords: ['modal', 'overlay', 'announcement', 'triggered'],
+    badge: 'New',
   },
   {
     id: 'custom-block-1',
