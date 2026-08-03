@@ -41,7 +41,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'banner',
     name: 'Banner',
     icon: <Image size={16} strokeWidth={1.75} />,
-    category: 'Custom',
+    category: 'General',
     description: 'Promotional artwork strip',
     preview: BannerPreview,
     keywords: ['hero', 'artwork', 'image', 'campaign'],
@@ -115,7 +115,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'custom-block-1',
     name: 'Custom Block 1',
     icon: <Blocks size={16} strokeWidth={1.75} />,
-    category: 'Custom',
+    category: 'General',
     description: 'Custom offer block',
     preview: CustomBlock1Preview,
     keywords: ['custom', 'blank', 'placeholder'],
@@ -124,7 +124,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'custom-block-2',
     name: 'Custom Block 2',
     icon: <Blocks size={16} strokeWidth={1.75} />,
-    category: 'Custom',
+    category: 'General',
     description: 'Custom offer block',
     preview: CustomBlock2Preview,
     keywords: ['custom', 'blank', 'placeholder'],
@@ -133,7 +133,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'custom-block-3',
     name: 'Custom Block 3',
     icon: <Blocks size={16} strokeWidth={1.75} />,
-    category: 'Custom',
+    category: 'General',
     description: 'Custom offer block',
     preview: CustomBlock3Preview,
     keywords: ['custom', 'blank', 'placeholder'],
@@ -142,7 +142,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'custom-block-4',
     name: 'Custom Block 298357983275897429857423975',
     icon: <Blocks size={16} strokeWidth={1.75} />,
-    category: 'Custom',
+    category: 'General',
     description: 'Custom offer block',
     preview: CustomBlock4Preview,
     keywords: ['custom', 'blank', 'placeholder'],
@@ -151,7 +151,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     id: 'custom-block-5',
     name: 'Custom Block 5',
     icon: <Blocks size={16} strokeWidth={1.75} />,
-    category: 'Custom',
+    category: 'General',
     description: 'Custom offer block',
     preview: CustomBlock5Preview,
     keywords: ['custom', 'blank', 'placeholder'],
@@ -160,7 +160,7 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
 
 /* Section order in the Add Offer modal. Any category not listed here still
  * renders, appended after these, so a new one can't silently vanish. */
-export const CATEGORY_ORDER = ['Retention', 'Monetization', 'Custom'] as const;
+export const CATEGORY_ORDER = ['Retention', 'Monetization', 'General'] as const;
 
 export const BLOCK_CATEGORIES: string[] = [
   'All',

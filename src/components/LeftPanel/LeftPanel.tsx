@@ -4,8 +4,8 @@ import {
   ChevronRight, ChevronDown,
   MousePointer2,
   ShoppingBag, Timer, Star, Image, IdCard, User,
-  CirclePlus, Plus, Eye, EyeOff, GripVertical, Trash2, Folder, Combine, Ungroup,
-  PanelTop, PanelBottom, Rows2,
+  CirclePlus, Plus, Eye, EyeOff, GripVertical, Trash2, Combine, Ungroup,
+  PanelTop, PanelBottom, Rows2, Columns2, AppWindow, Info,
 } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
 import {
@@ -133,7 +133,10 @@ const TREE: SectionGroup[] = [
       {
         id: 'daily-bonus',
         label: 'Daily Bonus',
-        blocks: [],
+        blocks: [
+          { id: 'daily-bonus-widget', label: 'Widget', icon: Rows2, toggleOnly: true },
+          { id: 'daily-bonus-popup',  label: 'Popup',  icon: AppWindow },
+        ],
       },
       {
         id: 'popup',
@@ -194,6 +197,9 @@ const TREE: SectionGroup[] = [
  * their own id, config, visibility and editor state, and the Preview
  * render order is unaffected. */
 const GROUPABLE_TYPES = ['reward-calendar', 'daily-bonus', 'popup'];
+
+/* Sections whose tree row can't be hidden or deleted (no eye / trash action). */
+const LOCKED_ROW_ACTIONS = ['daily-bonus', 'popup', 'reward-calendar'];
 const MAX_GROUP_SIZE = 3;
 
 /* Static/dynamic indicator (Cap 7.A.1) — "New" on Bundle & Promotion only.
@@ -229,6 +235,14 @@ type TemplateItem = Section | SectionGroupItem;
 
 const isGroupItem = (item: TemplateItem): item is SectionGroupItem =>
   (item as SectionGroupItem).type === 'group';
+
+/* A group's display name is built from its child blocks, in their current
+ * order — so the header reflects (and re-reads as) whatever is inside it. */
+const groupTitle = (g: SectionGroupItem): string => {
+  const names = g.children.map((c) => c.label);
+  if (names.length <= 1) return names[0] ?? g.title;
+  return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
+};
 
 /* Central gate for every grouping drag decision. */
 function canCreateGroup(draggedId: string, target: TemplateItem): boolean {
@@ -477,7 +491,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     const groupId = `group-${groupSeq.current++}`;
     setItems((prev) => removeEverywhere(prev, source.id).map((i) =>
       i.id === target.id && !isGroupItem(i)
-        ? { id: groupId, type: 'group' as const, title: 'Reward & Bonuses', children: [i, source] }
+        ? { id: groupId, type: 'group' as const, title: 'Reward, Bonuses & Popup', children: [i, source] }
         : i));
     setGroupOpen((prev) => new Set(prev).add(groupId));
     setActiveId(groupId);
@@ -512,7 +526,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
       [sourceId, ...targetIds].forEach((id) => { next = removeEverywhere(next, id); });
       const at = Math.min(insertAt === -1 ? next.length : insertAt, next.length);
       const merged = [...next];
-      merged.splice(at, 0, { id: groupId, type: 'group', title: 'Reward & Bonuses', children: [source, ...targets] });
+      merged.splice(at, 0, { id: groupId, type: 'group', title: 'Reward, Bonuses & Popup', children: [source, ...targets] });
       return merged;
     });
     setGroupOpen((prev) => new Set(prev).add(groupId));
@@ -544,7 +558,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     const groupId = `group-${groupSeq.current++}`;
     setItems((prev) => removeEverywhere(prev, section.id).map((i) =>
       i.id === target.id && !isGroupItem(i)
-        ? { id: groupId, type: 'group' as const, title: 'Reward & Bonuses', children: [i, section] }
+        ? { id: groupId, type: 'group' as const, title: 'Reward, Bonuses & Popup', children: [i, section] }
         : i));
     setGroupOpen((prev) => new Set(prev).add(groupId));
   };
@@ -562,7 +576,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
         if (i.id !== target.targetId) return i;
         return isGroupItem(i)
           ? { ...i, children: [dragged, ...i.children] }
-          : { id: groupId, type: 'group' as const, title: 'Reward & Bonuses', children: [i, dragged] };
+          : { id: groupId, type: 'group' as const, title: 'Reward, Bonuses & Popup', children: [i, dragged] };
       }));
       setGroupOpen((prev) => new Set(prev).add(groupId));
       setActiveId(groupId);
@@ -671,8 +685,8 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   const dragLayer = () => {
     const dragged = treeDrag.dragId ? findItem(treeDrag.dragId) : null;
     if (!dragged) return null;
-    const label = isGroupItem(dragged) ? dragged.title : dragged.label;
-    const Icon = isGroupItem(dragged) ? Folder : sectionIconFor(dragged.id);
+    const label = isGroupItem(dragged) ? groupTitle(dragged) : dragged.label;
+    const Icon = isGroupItem(dragged) ? Columns2 : sectionIconFor(dragged.id);
     return (
       <div
         ref={treeDrag.registerLayer}
@@ -778,7 +792,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                           </button>
                         </DropdownMenuTrigger>
                       </TooltipTrigger>
-                      <TooltipContent side="top" sideOffset={6}>Group blocks side by</TooltipContent>
+                      <TooltipContent side="top" sideOffset={6}>Group by side by side</TooltipContent>
                     </Tooltip>
                     <DropdownMenuContent align="start">
                       {groupTargetsFor(section.id).map((target) => (
@@ -791,7 +805,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                           onFocus={() => setGroupPreviewIds([target.id])}
                           onMouseLeave={() => setGroupPreviewIds([])}
                         >
-                          {isGroupItem(target) ? `Add to ${target.title}` : `Group with ${target.label}`}
+                          {isGroupItem(target) ? `Add to ${groupTitle(target)}` : `Group with ${target.label}`}
                         </DropdownMenuItem>
                       ))}
                       {(() => {
@@ -817,30 +831,36 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                   </DropdownMenu>
                 </span>
               )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className={`${styles.eyeBtn} ${isHidden ? styles.eyeBtnVisible : ''}`}
-                    onClick={(e) => { e.stopPropagation(); toggleHidden(section.id); }}
-                    aria-label={isHidden ? 'Show section' : 'Hide section'}
-                  >
-                    {isHidden ? <EyeOff size={13} strokeWidth={1.75} /> : <Eye size={13} strokeWidth={1.75} />}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" sideOffset={6}>{isHidden ? 'Show' : 'Hide'}</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    className={styles.deleteBtn}
-                    onClick={(e) => { e.stopPropagation(); setPendingDelete({ id: section.id, label: section.label }); }}
-                    aria-label="Delete section"
-                  >
-                    <Trash2 size={13} strokeWidth={1.75} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" sideOffset={6}>Delete</TooltipContent>
-              </Tooltip>
+              {/* These sections lock their row actions — no hide, no delete
+                * (e.g. Daily Bonus hides via its Widget sub-block instead). */}
+              {!LOCKED_ROW_ACTIONS.includes(section.id) && (
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        className={`${styles.eyeBtn} ${isHidden ? styles.eyeBtnVisible : ''}`}
+                        onClick={(e) => { e.stopPropagation(); toggleHidden(section.id); }}
+                        aria-label={isHidden ? 'Show section' : 'Hide section'}
+                      >
+                        {isHidden ? <EyeOff size={13} strokeWidth={1.75} /> : <Eye size={13} strokeWidth={1.75} />}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" sideOffset={6}>{isHidden ? 'Show' : 'Hide'}</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={(e) => { e.stopPropagation(); setPendingDelete({ id: section.id, label: section.label }); }}
+                        aria-label="Delete section"
+                      >
+                        <Trash2 size={13} strokeWidth={1.75} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" sideOffset={6}>Delete</TooltipContent>
+                  </Tooltip>
+                </>
+              )}
             </>
           )}
         </div>
@@ -881,6 +901,36 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                   <span className={`${styles.blockLabel} ${isHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
                   {block.subtitle && (
                     <span className={`${styles.blockSubtitle} ${isHidden ? styles.blockLabelHidden : ''}`}>– {block.subtitle}</span>
+                  )}
+                  {/* Popup carries an info tooltip: a short blurb plus a link
+                    * out to the dashboard. */}
+                  {block.id === 'daily-bonus-popup' && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label="About Popup"
+                          style={{ marginLeft: 'auto', display: 'flex', flexShrink: 0, color: '#a3a3a3' }}
+                        >
+                          <Info size={13} strokeWidth={1.75} />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={6} className="max-w-[220px] px-3 py-2.5">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <p style={{ margin: 0, color: '#525252', lineHeight: 1.5 }}>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.
+                          </p>
+                          <a
+                            href="#"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ fontWeight: 600, color: '#4f46e5', textDecoration: 'none' }}
+                          >
+                            Go to dashboard →
+                          </a>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </div>
               );
@@ -923,10 +973,10 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
             onPointerDown={beginDrag(item.id)}
             onClick={(e) => e.stopPropagation()}
           >
-            <Folder size={13} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
+            <Columns2 size={13} strokeWidth={1.75} className={`${styles.sectionIconDefault} ${styles.sectionIcon}`} />
             <GripVertical size={13} strokeWidth={1.75} className={styles.sectionIconGrip} />
           </span>
-          <span className={styles.sectionLabel}>{item.title}</span>
+          <span className={styles.sectionLabel}>{groupTitle(item)}</span>
           <span className={styles.groupActionSlot}>
             {shouldShowGroupAction(activeId, item) && (
               <Tooltip>
@@ -934,12 +984,12 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                   <button
                     className={styles.groupActionBtn}
                     onClick={(e) => { e.stopPropagation(); groupWith(item); }}
-                    aria-label={`Add to ${item.title}`}
+                    aria-label={`Add to ${groupTitle(item)}`}
                   >
                     <Combine size={13} strokeWidth={1.75} />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" sideOffset={6}>{`Add to ${item.title}`}</TooltipContent>
+                <TooltipContent side="top" sideOffset={6}>{`Add to ${groupTitle(item)}`}</TooltipContent>
               </Tooltip>
             )}
           </span>
@@ -948,7 +998,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                 <button
                   className={`${styles.groupActionBtn} ${styles.groupActionBtnHoverOnly}`}
                   onClick={(e) => { e.stopPropagation(); ungroup(item.id); }}
-                  aria-label={`Ungroup ${item.title}`}
+                  aria-label={`Ungroup ${groupTitle(item)}`}
                 >
                   <Ungroup size={13} strokeWidth={1.75} />
                 </button>
@@ -1136,12 +1186,12 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
       >
         <DialogContent
           overlayClassName="bg-white/60 backdrop-blur-[2px]"
-          className="max-w-[500px] gap-5 rounded-[20px] sm:rounded-[20px] p-6"
+          className="max-w-[500px] gap-6 rounded-[20px] sm:rounded-[20px] p-9"
         >
           <DialogHeader className="gap-1.5 text-left sm:text-left">
-            <DialogTitle className="text-[16px]">Remove “{pendingDelete?.label}” block from your live store</DialogTitle>
+            <DialogTitle className="text-[16px]">Remove {pendingDelete?.label} block from your live store?</DialogTitle>
             <DialogDescription>
-              “{pendingDelete?.label}” is live right now. It won’t be removed until you save — you can undo or cancel anytime before that.
+              {pendingDelete?.label} is live right now. It won’t be removed until you save — you can undo or cancel anytime before that.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:space-x-0">
@@ -1214,7 +1264,7 @@ function PersonalizationPanel() {
 }
 
 export default function LeftPanel({ state, activeSectionId, onSectionActivate, bottomOverride }: Props) {
-  const { isResizing, panelRef, onHandlePointerDown, onHandleDoubleClick } = useResizableDrawer();
+  const { isResizing, panelRef } = useResizableDrawer();
 
   return (
     /* No `style={{ width }}` — the hook owns the width imperatively so a
@@ -1228,20 +1278,6 @@ export default function LeftPanel({ state, activeSectionId, onSectionActivate, b
       {state.activePanel === 'blocks'          && <BlocksPanel activeSectionId={activeSectionId} onSectionActivate={onSectionActivate} bottomOverride={bottomOverride} />}
       {state.activePanel === 'brandKit'        && <BrandKitPanel />}
       {state.activePanel === 'personalization' && <PersonalizationPanel />}
-
-      {/* Resize handle — a wide invisible hit area with a thin visible rule,
-        * so it's easy to grab without drawing a chunky divider. */}
-      <div
-        className={styles.resizeHandle}
-        onPointerDown={onHandlePointerDown}
-        onDoubleClick={onHandleDoubleClick}
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="Resize editor panel"
-        title="Drag to resize · double-click to reset"
-      >
-        <span className={styles.resizeHandleRule} />
-      </div>
     </aside>
   );
 }
