@@ -154,13 +154,9 @@ export const DEFAULT_PREVIEW_STATE: PreviewState = {
         ],
       },
     },
-    {
-      id: 'add-to-home-screen',
-      label: 'Add to Home Screen',
-      component: CollectWidget,
-      isVisible: true,
-      data: { icon: '📲', cta: 'ADD' },
-    },
+    /* Add to Home Screen is not rendered in-flow — its entry point (persistent
+     * banner or floating button) plus the instruction/reward popups are owned
+     * by the A2HS layer (see components/StorePreview/a2hs/), driven by useA2HS. */
     /* Custom Block 1-5 — generic placeholder slots (Add Offer modal), reuse
      * CollectWidget like the other registry-only blocks above. */
     {

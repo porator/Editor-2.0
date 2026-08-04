@@ -3,6 +3,7 @@ import type { EditorState } from '../../types/editor';
 import { useWindowWidth } from '../../hooks/useWindowWidth';
 import { SectionFocusProvider } from '../../hooks/useSectionFocus';
 import { GroupingProvider } from '../../hooks/useGrouping';
+import { A2HSProvider } from '../../hooks/useA2HS';
 import TopNavigation from '../TopNavigation/TopNavigation';
 import LeftPanel from '../LeftPanel/LeftPanel';
 import PreviewWorkspace from '../PreviewWorkspace/PreviewWorkspace';
@@ -47,6 +48,7 @@ export default function EditorShell({ state, onStateChange }: Props) {
   return (
     <SectionFocusProvider>
     <GroupingProvider>
+    <A2HSProvider>
     <div className={styles.shell}>
       <TopNavigation state={state} onStateChange={onStateChange} />
       <div className={styles.body}>
@@ -77,6 +79,7 @@ export default function EditorShell({ state, onStateChange }: Props) {
         )}
       </div>
     </div>
+    </A2HSProvider>
     </GroupingProvider>
     </SectionFocusProvider>
   );

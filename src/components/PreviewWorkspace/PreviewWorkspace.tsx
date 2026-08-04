@@ -3,6 +3,8 @@ import { PanelTop } from 'lucide-react';
 import type { EditorState } from '../../types/editor';
 import WhiteLabelStoreRenderer from '../WhiteLabelPreview/WhiteLabelPreview';
 import StorePreview from '../StorePreview/StorePreview';
+import A2HSBanner from '../StorePreview/a2hs/A2HSBanner';
+import A2HSLayer from '../StorePreview/a2hs/A2HSLayer';
 import PreviewSkeleton from './PreviewSkeleton';
 import { useFirstOpen } from '../../hooks/useFirstOpen';
 import styles from './PreviewWorkspace.module.css';
@@ -147,8 +149,12 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
     <div className={styles.workspace}>
       {previewMode === 'mobile' ? (
         <div className={styles.mobileFrame}>
-          <div className={styles.mobileCanvas}>
-            <GameStoreMobile activeSection={activeSection} onSectionClick={onSectionClick} whiteLabel={whiteLabel} />
+          <div className={styles.mobileViewport}>
+            <div className={styles.mobileCanvas}>
+              {!whiteLabel && <A2HSBanner onSelect={onSectionClick} />}
+              <GameStoreMobile activeSection={activeSection} onSectionClick={onSectionClick} whiteLabel={whiteLabel} />
+            </div>
+            {!whiteLabel && <A2HSLayer onSelect={onSectionClick} />}
           </div>
         </div>
       ) : previewMode === 'tablet' ? (

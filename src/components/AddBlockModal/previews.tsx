@@ -6,6 +6,7 @@ import RollingOffer from '../StorePreview/sections/RollingOffer';
 import ProgressBar from '../StorePreview/sections/ProgressBar';
 import CollectWidget from '../StorePreview/sections/CollectWidget';
 import { DEFAULT_PREVIEW_STATE } from '../StorePreview/state';
+import { DEFAULT_A2HS_CONFIG } from '../../hooks/useA2HS';
 
 /* ── Block previews ──
  * Each block owns its preview. Blocks that exist in the Store Preview
@@ -83,8 +84,27 @@ export function PopupPreview() {
   return <CollectWidgetPreview id="popup" />;
 }
 
+/* A2HS shows the persistent Banner template as its preview (static). */
 export function AddToHomeScreenPreview() {
-  return <CollectWidgetPreview id="add-to-home-screen" />;
+  const { banner, ctaText } = DEFAULT_A2HS_CONFIG;
+  return (
+    <div style={frame}>
+      <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', margin: '4px 0' }}>
+        <div style={{ position: 'absolute', inset: 0, background: banner.bgColor, opacity: banner.opacity / 100 }} />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px' }}>
+          <span style={{ width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, background: 'rgba(255,255,255,0.18)' }}>
+            {banner.productEmoji}
+          </span>
+          <span style={{ flex: 1, minWidth: 0, color: '#fff', fontSize: 10.5, fontWeight: 700, lineHeight: 1.2 }}>
+            {banner.richText}
+          </span>
+          <span style={{ padding: '5px 9px', borderRadius: 6, background: '#fff', color: '#111827', fontSize: 9.5, fontWeight: 800, whiteSpace: 'nowrap' }}>
+            {ctaText}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function CustomBlock1Preview() {

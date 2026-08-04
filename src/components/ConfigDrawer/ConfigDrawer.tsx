@@ -21,7 +21,10 @@ import type {
   Control, ConfigRow, SubNode, CssTag, Availability,
 } from './config-data';
 import { isNewBlock, NewBadge } from '../LeftPanel/NewBadge';
+import A2HSConfigPanel from './A2HSConfigPanel';
 import styles from './ConfigDrawer.module.css';
+
+const A2HS_ID = 'add-to-home-screen';
 
 /* ── Tag + status color tokens ── */
 
@@ -288,6 +291,9 @@ function ScopedSubElement({ subId }: { subId: string }) {
 export function ConfigDrawerBody({ sectionId }: { sectionId: string }) {
   const block = getBlockConfig(sectionId);
   const [level, setLevel] = useState<1 | 2>(1);
+
+  // A2HS uses a bespoke, live-bound config panel instead of the metadata rows.
+  if (sectionId === A2HS_ID) return <A2HSConfigPanel />;
   if (!block) return null;
 
   // A specific sub-element tab → flat, standalone config (no navigation).
@@ -325,6 +331,28 @@ export default function ConfigDrawer({ sectionId, onBack }: Props) {
   const block = getBlockConfig(sectionId);
   const scoped = isSubBlock(sectionId);
   const [level, setLevel] = useState<1 | 2>(1);
+
+  // A2HS: bespoke, live-bound config panel inside the standard drawer shell.
+  if (sectionId === A2HS_ID) {
+    return (
+      <div className={styles.drawer}>
+        <div className={styles.header}>
+          <button className={styles.backBtn} onClick={onBack} aria-label="Close">
+            <ChevronLeft size={16} strokeWidth={2} />
+          </button>
+          <span className={styles.title}>
+            Add to Home Screen
+            {isNewBlock(sectionId) && <NewBadge />}
+          </span>
+          <button className={styles.menuBtn} aria-label="More options">
+            <MoreHorizontal size={16} strokeWidth={1.75} />
+          </button>
+        </div>
+        <div className={styles.body}><A2HSConfigPanel /></div>
+      </div>
+    );
+  }
+
   if (!block) return null;
 
   // Title: scoped sub-element → just its name; block Level 2 → "Block → Sub-elements".

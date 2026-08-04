@@ -98,9 +98,10 @@ export const BLOCK_REGISTRY: BlockDefinition[] = [
     name: 'Add to Home Screen',
     icon: <Smartphone size={16} strokeWidth={1.75} />,
     category: 'Retention',
-    description: 'Prompt to install the web store',
+    description: 'Rewarded persistent banner to install the web store',
     preview: AddToHomeScreenPreview,
-    keywords: ['pwa', 'install', 'home screen', 'shortcut', 'a2hs'],
+    keywords: ['pwa', 'install', 'home screen', 'shortcut', 'a2hs', 'banner', 'reward'],
+    badge: 'New',
   },
   {
     id: 'popup',

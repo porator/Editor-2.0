@@ -80,6 +80,21 @@ const SECTION_CONFIGS: Record<string, SectionConfig> = {
     ],
   },
 
+  /* Add to Home Screen — label/registration only; the drawer routes this id to
+   * the bespoke A2HSConfigPanel (live-bound to useA2HS), not these rows. */
+  'add-to-home-screen': {
+    label: 'Add to Home Screen',
+    categories: [
+      {
+        id: 'positioning',
+        label: 'Entry point',
+        controls: [
+          { id: 'a2hs-template', label: 'Template', type: 'select', defaultValue: 'Banner', options: ['Existing (button)', 'Banner'] },
+        ],
+      },
+    ],
+  },
+
   footer: {
     label: 'Footer',
     categories: [
@@ -258,6 +273,19 @@ const SECTION_CONFIGS: Record<string, SectionConfig> = {
   popup: {
     label: 'Popup Modal',
     categories: [
+      {
+        id: 'trigger',
+        label: 'Trigger',
+        controls: [
+          {
+            id: 'trigger-type',
+            label: 'Fires on',
+            type: 'select',
+            defaultValue: 'Post Purchase',
+            options: ['Post Purchase', 'Store Refresh', 'Enter store with home screen icon'],
+          },
+        ],
+      },
       {
         id: 'color-fill',
         label: 'Color & Fill',
@@ -1168,6 +1196,7 @@ const CATEGORY_TAGS: Record<string, CssTag[]> = {
   'typography-subtitle':   ['Typography'],
   'typography-description':['Typography'],
   'positioning':           ['Layout', 'Visibility'],
+  'trigger':               ['Behavior'],
   'visibility':            ['Visibility'],
   'grid-layout':           ['Layout'],
   'layout-structure':      ['Layout', 'Border'],
