@@ -95,10 +95,17 @@ export function AddToHomeScreenPreview() {
           <span style={{ width: 26, height: 26, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, background: 'rgba(255,255,255,0.18)' }}>
             {banner.productEmoji}
           </span>
-          <span style={{ flex: 1, minWidth: 0, color: '#fff', fontSize: 10.5, fontWeight: 700, lineHeight: 1.2 }}>
-            {banner.richText}
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {banner.title && (
+              <span style={{ color: '#fff', fontSize: 11, fontWeight: 800, lineHeight: 1.15 }}>
+                {banner.title}
+              </span>
+            )}
+            <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 10, fontWeight: 600, lineHeight: 1.2 }}>
+              {banner.richText}
+            </span>
           </span>
-          <span style={{ padding: '5px 9px', borderRadius: 6, background: '#fff', color: '#111827', fontSize: 9.5, fontWeight: 800, whiteSpace: 'nowrap' }}>
+          <span style={{ padding: '5px 9px', borderRadius: 6, background: banner.ctaBgColor, color: banner.ctaTextColor, fontFamily: banner.ctaFont, fontSize: 9.5, fontWeight: 800, whiteSpace: 'nowrap' }}>
             {ctaText}
           </span>
         </div>

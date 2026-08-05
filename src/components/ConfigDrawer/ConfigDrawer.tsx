@@ -26,6 +26,15 @@ import styles from './ConfigDrawer.module.css';
 
 const A2HS_ID = 'add-to-home-screen';
 
+/* A2HS splits into two selectable sub-elements in the tree, each scoping the
+ * bespoke config panel to a subset of its sections. */
+type A2HSScope = 'all' | 'entry' | 'popup';
+const A2HS_SCOPES: Record<string, { scope: A2HSScope; title: string }> = {
+  'add-to-home-screen': { scope: 'all',   title: 'Add to Home Screen' },
+  'a2hs-entry':         { scope: 'entry', title: 'Entry point' },
+  'a2hs-popup':         { scope: 'popup', title: 'Popup' },
+};
+
 /* ── Tag + status color tokens ── */
 
 const TAG_COLORS: Record<CssTag, { bg: string; fg: string }> = {
@@ -293,7 +302,7 @@ export function ConfigDrawerBody({ sectionId }: { sectionId: string }) {
   const [level, setLevel] = useState<1 | 2>(1);
 
   // A2HS uses a bespoke, live-bound config panel instead of the metadata rows.
-  if (sectionId === A2HS_ID) return <A2HSConfigPanel />;
+  if (A2HS_SCOPES[sectionId]) return <A2HSConfigPanel scope={A2HS_SCOPES[sectionId].scope} />;
   if (!block) return null;
 
   // A specific sub-element tab → flat, standalone config (no navigation).
@@ -333,7 +342,9 @@ export default function ConfigDrawer({ sectionId, onBack }: Props) {
   const [level, setLevel] = useState<1 | 2>(1);
 
   // A2HS: bespoke, live-bound config panel inside the standard drawer shell.
-  if (sectionId === A2HS_ID) {
+  // The parent and its two sub-elements (Entry point / Popup) each scope it.
+  const a2hs = A2HS_SCOPES[sectionId];
+  if (a2hs) {
     return (
       <div className={styles.drawer}>
         <div className={styles.header}>
@@ -341,14 +352,14 @@ export default function ConfigDrawer({ sectionId, onBack }: Props) {
             <ChevronLeft size={16} strokeWidth={2} />
           </button>
           <span className={styles.title}>
-            Add to Home Screen
-            {isNewBlock(sectionId) && <NewBadge />}
+            {a2hs.title}
+            {isNewBlock(A2HS_ID) && <NewBadge />}
           </span>
           <button className={styles.menuBtn} aria-label="More options">
             <MoreHorizontal size={16} strokeWidth={1.75} />
           </button>
         </div>
-        <div className={styles.body}><A2HSConfigPanel /></div>
+        <div className={styles.body}><A2HSConfigPanel scope={a2hs.scope} /></div>
       </div>
     );
   }

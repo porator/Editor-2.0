@@ -21,6 +21,7 @@ import {
 import { Button } from '../ds/atoms/Button';
 import { useFocusState } from '../../hooks/useSectionFocus';
 import { useGrouping } from '../../hooks/useGrouping';
+import { useA2HS } from '../../hooks/useA2HS';
 import { useFirstOpen } from '../../hooks/useFirstOpen';
 import { useResizableDrawer } from '../../hooks/useResizableDrawer';
 import { useResizableStack } from '../../hooks/useResizableStack';
@@ -146,7 +147,10 @@ const TREE: SectionGroup[] = [
       {
         id: 'add-to-home-screen',
         label: 'Add to Home Screen',
-        blocks: [],
+        blocks: [
+          { id: 'a2hs-entry', label: 'Entry point', icon: MousePointer2 },
+          { id: 'a2hs-popup', label: 'Popup',       icon: AppWindow },
+        ],
       },
       {
         id: 'custom-block-1',
@@ -314,6 +318,10 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   // renders the same blocks, in the same order, with groups side by side.
   const { publish } = useGrouping();
 
+  // A2HS entry-point visibility is driven from its "Entry point" sub-element
+  // row's eye toggle (replaces the removed "Show entry point" config switch).
+  const a2hs = useA2HS();
+
   // deleted sections (template-group only)
   const [deleted, setDeleted] = useState<Set<string>>(new Set());
 
@@ -361,9 +369,16 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
   const insertBlock = (blockId: string) => {
     const template = templateGroup.sections.find((s) => s.id === blockId);
     if (!template) return;
+    /* Adding an offer selects its tree row and opens its config drawer (the
+     * drawer no-ops for blocks without a config surface). */
+    const focusAdded = () => {
+      setActiveId(blockId);
+      onSectionActivate?.(blockId, template.label);
+    };
     if (deleted.has(blockId)) {
       // restore a previously deleted section in place
       setDeleted((prev) => { const next = new Set(prev); next.delete(blockId); return next; });
+      focusAdded();
       return;
     }
     const alreadyPresent = items.some(
@@ -371,6 +386,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     );
     if (alreadyPresent) return;
     setItems((prev) => [...prev, template]);
+    focusAdded();
   };
 
   // Each block type can only be used once — hide any currently-visible
@@ -891,6 +907,9 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                   </div>
                 );
               }
+              /* Entry point drives A2HS visibility via its own eye toggle. */
+              const isA2HSEntry = block.id === 'a2hs-entry';
+              const blockDim = isA2HSEntry ? !a2hs.config.enabled : isHidden;
               return (
                 <div
                   key={block.id}
@@ -900,10 +919,20 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                     onSectionActivate?.(block.id, block.label);
                   }}
                 >
-                  <block.icon size={13} strokeWidth={1.75} className={`${styles.blockIcon} ${isHidden ? styles.blockIconHidden : ''}`} />
-                  <span className={`${styles.blockLabel} ${isHidden ? styles.blockLabelHidden : ''}`}>{block.label}</span>
+                  <block.icon size={13} strokeWidth={1.75} className={`${styles.blockIcon} ${blockDim ? styles.blockIconHidden : ''}`} />
+                  <span className={`${styles.blockLabel} ${blockDim ? styles.blockLabelHidden : ''}`}>{block.label}</span>
                   {block.subtitle && (
-                    <span className={`${styles.blockSubtitle} ${isHidden ? styles.blockLabelHidden : ''}`}>– {block.subtitle}</span>
+                    <span className={`${styles.blockSubtitle} ${blockDim ? styles.blockLabelHidden : ''}`}>– {block.subtitle}</span>
+                  )}
+                  {isA2HSEntry && (
+                    <button
+                      className={`${styles.eyeBtn} ${!a2hs.config.enabled ? styles.eyeBtnVisible : ''}`}
+                      onClick={(e) => { e.stopPropagation(); a2hs.setConfig((c) => ({ ...c, enabled: !c.enabled })); }}
+                      aria-label={a2hs.config.enabled ? 'Hide Entry point' : 'Show Entry point'}
+                      style={{ marginLeft: 'auto' }}
+                    >
+                      {a2hs.config.enabled ? <Eye size={13} strokeWidth={1.75} /> : <EyeOff size={13} strokeWidth={1.75} />}
+                    </button>
                   )}
                   {/* Popup carries an info tooltip: a short blurb plus a link
                     * out to the dashboard. */}

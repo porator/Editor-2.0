@@ -32,13 +32,18 @@ export default function A2HSBanner({ onSelect }: Props) {
       <div style={{ ...styles.bg, ...bg, opacity: banner.opacity / 100 }} />
 
       <div style={styles.content}>
-        {banner.productEmoji && (
+        {banner.productImage ? (
+          <img src={banner.productImage} alt="" style={styles.productImg} />
+        ) : banner.productEmoji ? (
           <span style={styles.product}>{banner.productEmoji}</span>
-        )}
-        <span style={styles.text}>{banner.richText}</span>
+        ) : null}
+        <span style={styles.textCol}>
+          {banner.title && <span style={styles.title}>{banner.title}</span>}
+          <span style={styles.text}>{banner.richText}</span>
+        </span>
         <button
           type="button"
-          style={styles.cta}
+          style={{ ...styles.cta, background: banner.ctaBgColor, color: banner.ctaTextColor, fontFamily: banner.ctaFont }}
           onClick={(e) => { e.stopPropagation(); openInstruction(); }}
         >
           {ctaText}
@@ -49,7 +54,9 @@ export default function A2HSBanner({ onSelect }: Props) {
           aria-label="Dismiss"
           onClick={(e) => { e.stopPropagation(); dismissEntry(); }}
         >
-          <X size={15} strokeWidth={2.5} />
+          {banner.dismissIcon
+            ? <img src={banner.dismissIcon} alt="" style={styles.dismissImg} />
+            : <X size={15} strokeWidth={2.5} />}
         </button>
       </div>
     </div>
@@ -91,12 +98,33 @@ const styles = {
     background: 'rgba(255,255,255,0.18)',
     boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.3)',
   },
-  text: {
+  productImg: {
+    flexShrink: 0,
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    objectFit: 'cover',
+    boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.3)',
+  },
+  textCol: {
     flex: 1,
     minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 1,
+  },
+  title: {
     color: '#ffffff',
-    fontSize: 12.5,
-    fontWeight: 700,
+    fontSize: 13,
+    fontWeight: 800,
+    lineHeight: 1.2,
+    textShadow: '0 1px 2px rgba(0,0,0,0.35)',
+  },
+  text: {
+    minWidth: 0,
+    color: 'rgba(255,255,255,0.92)',
+    fontSize: 12,
+    fontWeight: 600,
     lineHeight: 1.25,
     textShadow: '0 1px 2px rgba(0,0,0,0.35)',
   },
@@ -123,5 +151,11 @@ const styles = {
     borderRadius: '50%',
     color: 'rgba(255,255,255,0.85)',
     cursor: 'pointer',
+  },
+  dismissImg: {
+    width: 16,
+    height: 16,
+    objectFit: 'contain',
+    display: 'block',
   },
 } satisfies Record<string, CSSProperties>;

@@ -7,7 +7,10 @@ import A2HSBanner from '../StorePreview/a2hs/A2HSBanner';
 import A2HSLayer from '../StorePreview/a2hs/A2HSLayer';
 import PreviewSkeleton from './PreviewSkeleton';
 import { useFirstOpen } from '../../hooks/useFirstOpen';
+import { useGrouping } from '../../hooks/useGrouping';
 import styles from './PreviewWorkspace.module.css';
+
+const A2HS_ID = 'add-to-home-screen';
 
 const IMG_W = 1600;
 const IMG_H = 1132;
@@ -122,6 +125,10 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
+  // A2HS only renders in the preview once its block is added to the block tree.
+  const { order } = useGrouping();
+  const showA2HS = !whiteLabel && order.includes(A2HS_ID);
+
   // First-time users see the animated skeleton once, for 6s.
   const loading = useFirstOpen(6000);
 
@@ -151,10 +158,10 @@ export default function PreviewWorkspace({ state, activeSection, onSectionClick 
         <div className={styles.mobileFrame}>
           <div className={styles.mobileViewport}>
             <div className={styles.mobileCanvas}>
-              {!whiteLabel && <A2HSBanner onSelect={onSectionClick} />}
+              {showA2HS && <A2HSBanner onSelect={onSectionClick} />}
               <GameStoreMobile activeSection={activeSection} onSectionClick={onSectionClick} whiteLabel={whiteLabel} />
             </div>
-            {!whiteLabel && <A2HSLayer onSelect={onSectionClick} />}
+            {showA2HS && <A2HSLayer onSelect={onSectionClick} />}
           </div>
         </div>
       ) : previewMode === 'tablet' ? (

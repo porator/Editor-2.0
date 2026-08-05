@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
-import { Share, Plus, Check } from 'lucide-react';
+import { Share, Plus, Check, X } from 'lucide-react';
 import { useA2HS } from '../../../hooks/useA2HS';
 
 /* Appcharge-managed instruction popup shown after the CTA. Presentation is
@@ -59,6 +59,17 @@ export default function InstructionPopup() {
         <div style={{ ...styles.bg, ...bg, opacity: instruction.opacity / 100 }} />
 
         <div style={styles.body}>
+          <button
+            type="button"
+            style={styles.close}
+            aria-label="Dismiss"
+            onClick={closeInstruction}
+          >
+            {instruction.dismissIcon
+              ? <img src={instruction.dismissIcon} alt="" style={styles.closeImg} />
+              : <X size={15} strokeWidth={2.5} />}
+          </button>
+
           {isDrawer && (
             <div
               style={styles.handleZone}
@@ -71,7 +82,9 @@ export default function InstructionPopup() {
           )}
 
           <h3 style={styles.title}>Add to Home Screen</h3>
-          {instruction.richText && <p style={styles.rich}>{instruction.richText}</p>}
+          {instruction.richText && (
+            <div style={styles.rich} dangerouslySetInnerHTML={{ __html: instruction.richText }} />
+          )}
 
           {androidNative ? (
             /* Simulated Android native install prompt */
@@ -156,6 +169,27 @@ const styles = {
     position: 'relative',
     zIndex: 1,
     padding: '4px 16px 18px',
+  },
+  close: {
+    position: 'absolute',
+    top: 10,
+    right: 12,
+    zIndex: 2,
+    width: 24,
+    height: 24,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '50%',
+    background: 'rgba(17,24,39,0.06)',
+    color: 'rgba(17,24,39,0.55)',
+    cursor: 'pointer',
+  },
+  closeImg: {
+    width: 16,
+    height: 16,
+    objectFit: 'contain',
+    display: 'block',
   },
   handleZone: {
     display: 'flex',

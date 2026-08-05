@@ -19,11 +19,17 @@ export type A2HSIdentityMode = 'playerId' | 'playerId+deviceId';
 export type A2HSCooldownUnit = 'hours' | 'days';
 
 export interface A2HSBannerConfig {
+  title: string;
   richText: string;
   bgColor: string;
   bgImage?: string;
   opacity: number; // 0–100
   productEmoji?: string; // stand-in for the PAPI product-image override
+  productImage?: string; // uploaded image (data URL); mutually exclusive with productEmoji
+  ctaFont: string; // CTA button font-family stack
+  ctaBgColor: string; // CTA button background
+  ctaTextColor: string; // CTA button text color
+  dismissIcon?: string; // uploaded image (data URL) replacing the X dismiss icon
 }
 
 export interface A2HSInstructionConfig {
@@ -33,12 +39,14 @@ export interface A2HSInstructionConfig {
   bgImage?: string;
   opacity: number; // 0–100
   ctaText: string;
+  dismissIcon?: string; // uploaded image (data URL) replacing the ✕ close icon
 }
 
 export interface A2HSConfig {
   enabled: boolean; // tree eye toggle — shows/hides the entry point
   template: A2HSTemplate;
   ctaText: string; // entry-point CTA label
+  buttonBgColor: string; // floating-button (Button template) fill color
   banner: A2HSBannerConfig;
   instruction: A2HSInstructionConfig;
   reward: { configured: boolean }; // drives the "configure a reward" reminder
@@ -55,19 +63,23 @@ export interface A2HSRuntime {
   completed: boolean; // flow completed → entry permanently suppressed
 }
 
-/* Defaults mirror the PRD Configuration table, except `template` defaults to
- * 'banner' (PRD default is 'existing') so the headline feature is visible on
- * first load, and `reward.configured` defaults true so the reward popup fires
- * in the demo without extra setup. */
+/* Defaults mirror the PRD Configuration table (`template` = 'existing', the
+ * floating Button); `reward.configured` defaults true so the reward popup
+ * fires in the demo without extra setup. */
 export const DEFAULT_A2HS_CONFIG: A2HSConfig = {
   enabled: true,
-  template: 'banner',
-  ctaText: 'Add to Home Screen',
+  template: 'existing',
+  ctaText: 'Add to home screen',
+  buttonBgColor: '#4f46e5',
   banner: {
+    title: 'Add to Home Screen',
     richText: 'Add our store to your home screen — grab a reward!',
     bgColor: '#6d28d9',
     opacity: 100,
     productEmoji: '🎁',
+    ctaFont: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    ctaBgColor: '#ffffff',
+    ctaTextColor: '#111827',
   },
   instruction: {
     presentation: 'drawer',
