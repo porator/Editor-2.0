@@ -129,7 +129,10 @@ const TREE: SectionGroup[] = [
       {
         id: 'reward-calendar',
         label: 'Reward Calendar',
-        blocks: [],
+        blocks: [
+          { id: 'reward-calendar-widget', label: 'Widget', icon: Rows2, toggleOnly: true },
+          { id: 'reward-calendar-popup',  label: 'Popup',  icon: AppWindow },
+        ],
       },
       {
         id: 'daily-bonus',
@@ -141,15 +144,15 @@ const TREE: SectionGroup[] = [
       },
       {
         id: 'popup',
-        label: 'Popup',
+        label: 'Triggered Popup',
         blocks: [],
       },
       {
         id: 'add-to-home-screen',
         label: 'Add to Home Screen',
         blocks: [
-          { id: 'a2hs-entry', label: 'Entry point', icon: MousePointer2 },
-          { id: 'a2hs-popup', label: 'Popup',       icon: AppWindow },
+          { id: 'a2hs-entry', label: 'Entry point',        icon: MousePointer2 },
+          { id: 'a2hs-popup', label: 'Popup instructions', icon: AppWindow },
         ],
       },
       {
@@ -370,10 +373,14 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
     const template = templateGroup.sections.find((s) => s.id === blockId);
     if (!template) return;
     /* Adding an offer selects its tree row and opens its config drawer (the
-     * drawer no-ops for blocks without a config surface). */
+     * drawer no-ops for blocks without a config surface). Blocks with
+     * sub-elements also expand so their children show immediately. */
     const focusAdded = () => {
       setActiveId(blockId);
       onSectionActivate?.(blockId, template.label);
+      if (template.blocks.length > 0) {
+        setExpanded((prev) => new Set(prev).add(blockId));
+      }
     };
     if (deleted.has(blockId)) {
       // restore a previously deleted section in place
@@ -811,7 +818,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                           </button>
                         </DropdownMenuTrigger>
                       </TooltipTrigger>
-                      <TooltipContent side="top" sideOffset={6}>Group by side by side</TooltipContent>
+                      <TooltipContent side="top" sideOffset={6}>Group side by side</TooltipContent>
                     </Tooltip>
                     <DropdownMenuContent align="start">
                       {groupTargetsFor(section.id).map((target) => (
@@ -1028,7 +1035,7 @@ function BlocksPanel({ onSectionActivate, bottomOverride, activeSectionId }: {
                     <Combine size={13} strokeWidth={1.75} />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" sideOffset={6}>{`Add to ${groupTitle(item)}`}</TooltipContent>
+                <TooltipContent side="top" sideOffset={6}>Group side by side</TooltipContent>
               </Tooltip>
             )}
           </span>

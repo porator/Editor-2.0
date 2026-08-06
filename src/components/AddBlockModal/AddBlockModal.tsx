@@ -186,7 +186,7 @@ export default function AddBlockModal({ open, onOpenChange, onInsert, children, 
               {/* Category filter chips — combine with the text search. "All"
                * clears the category filter; clicking the active chip also
                * clears it. */}
-              <div className="mt-2.5 flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,#000_calc(100%_-_28px),transparent)] [-webkit-mask-image:linear-gradient(to_right,#000_calc(100%_-_28px),transparent)]">
+              <div className="mt-2.5 flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {[null, ...categoryList, 'Example 1', 'Example 2', 'Example 3'].map((cat) => {
                   const active = activeCategory === cat;
                   return (

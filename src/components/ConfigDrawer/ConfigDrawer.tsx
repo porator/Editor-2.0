@@ -32,7 +32,7 @@ type A2HSScope = 'all' | 'entry' | 'popup';
 const A2HS_SCOPES: Record<string, { scope: A2HSScope; title: string }> = {
   'add-to-home-screen': { scope: 'all',   title: 'Add to Home Screen' },
   'a2hs-entry':         { scope: 'entry', title: 'Entry point' },
-  'a2hs-popup':         { scope: 'popup', title: 'Popup' },
+  'a2hs-popup':         { scope: 'popup', title: 'Popup instructions' },
 };
 
 /* ── Tag + status color tokens ── */

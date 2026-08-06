@@ -10,10 +10,11 @@ import { useA2HS } from '../../../hooks/useA2HS';
  * native prompt is unavailable. Publisher rich text / background / opacity sit
  * behind the Appcharge-managed steps. */
 
-const IOS_STEPS = [
-  { icon: <Share size={15} strokeWidth={2.25} />, text: 'Tap the Share button at the bottom of your browser' },
-  { icon: <Plus size={15} strokeWidth={2.25} />, text: 'Scroll down and tap "Add to Home Screen"' },
-  { icon: <Check size={15} strokeWidth={2.25} />, text: 'Tap "Add" to confirm' },
+/* Fallback icons for steps that don't have an uploaded image, by index. */
+const STEP_ICONS = [
+  <Share size={15} strokeWidth={2.25} />,
+  <Plus size={15} strokeWidth={2.25} />,
+  <Check size={15} strokeWidth={2.25} />,
 ];
 
 export default function InstructionPopup() {
@@ -81,7 +82,7 @@ export default function InstructionPopup() {
             </div>
           )}
 
-          <h3 style={styles.title}>Add to Home Screen</h3>
+          <h3 style={styles.title}>{instruction.title}</h3>
           {instruction.richText && (
             <div style={styles.rich} dangerouslySetInnerHTML={{ __html: instruction.richText }} />
           )}
@@ -102,13 +103,22 @@ export default function InstructionPopup() {
               </div>
             </div>
           ) : (
-            /* iOS step-by-step guide (also the Android fallback) */
+            /* iOS step-by-step guide (also the Android fallback). Each step is
+             * an image card when the publisher uploaded one, else a numbered
+             * icon row. */
             <ol style={styles.steps}>
-              {IOS_STEPS.map((s, i) => (
-                <li key={i} style={styles.step}>
-                  <span style={styles.stepNum}>{i + 1}</span>
-                  <span style={styles.stepIcon}>{s.icon}</span>
-                  <span style={styles.stepText}>{s.text}</span>
+              {instruction.steps.map((s, i) => (
+                <li key={i} style={styles.cardStep}>
+                  {s.image ? (
+                    <img src={s.image} alt="" style={styles.cardImg} />
+                  ) : (
+                    /* Default placeholder illustration until the merchant uploads one. */
+                    <div style={styles.cardPlaceholder}>
+                      {STEP_ICONS[i] ?? <Check size={22} strokeWidth={2} />}
+                    </div>
+                  )}
+                  <span style={styles.cardBadge}>Step {i + 1}</span>
+                  {s.text && <div style={styles.cardCaption}>{s.text}</div>}
                 </li>
               ))}
             </ol>
@@ -116,11 +126,13 @@ export default function InstructionPopup() {
 
           {!androidNative && (
             <div style={styles.actions}>
-              <button type="button" style={styles.primary} onClick={simulateHomeEntry}>
-                Simulate opening from Home Screen
-              </button>
-              <button type="button" style={styles.secondary} onClick={closeInstruction}>
+              {/* Primary CTA is the publisher's "Got it"; the simulate action is
+               * an editor-only demo affordance below it. */}
+              <button type="button" style={styles.primary} onClick={closeInstruction}>
                 {instruction.ctaText}
+              </button>
+              <button type="button" style={styles.secondary} onClick={simulateHomeEntry}>
+                Simulate opening from Home Screen
               </button>
             </div>
           )}
@@ -148,7 +160,9 @@ const styles = {
   },
   drawer: {
     marginTop: 'auto',
-    width: '100%',
+    /* Span the full viewport width — the scrim's 14px padding is cancelled by
+     * the negative side margins, and +28px restores the width they'd remove. */
+    width: 'calc(100% + 28px)',
     borderRadius: '18px 18px 0 0',
     marginLeft: -14,
     marginRight: -14,
@@ -228,6 +242,48 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
+  },
+  cardStep: {
+    position: 'relative',
+    borderRadius: 14,
+    overflow: 'hidden',
+    background: '#1f2430',
+  },
+  cardImg: {
+    display: 'block',
+    width: '100%',
+    height: 60,
+    objectFit: 'cover',
+  },
+  cardPlaceholder: {
+    width: '100%',
+    height: 60,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
+    color: '#64748b',
+  },
+  cardBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    padding: '3px 9px',
+    borderRadius: 7,
+    background: 'rgba(17,24,39,0.6)',
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: 700,
+    backdropFilter: 'blur(4px)',
+    WebkitBackdropFilter: 'blur(4px)',
+  },
+  cardCaption: {
+    padding: '10px 12px',
+    color: '#fff',
+    fontSize: 12.5,
+    fontWeight: 600,
+    lineHeight: 1.35,
+    textAlign: 'center',
   },
   stepNum: {
     flexShrink: 0,

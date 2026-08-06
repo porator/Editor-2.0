@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import {
-  Upload, Gift, ChevronRight, ChevronDown, Check, AlertCircle, X,
+  Upload, ChevronDown, Check, X,
   Bold, Italic, AlignLeft, AlignCenter, AlignRight,
   Image as ImageIcon, Link as LinkIcon, ListOrdered, Pilcrow, Baseline,
 } from 'lucide-react';
@@ -13,18 +13,13 @@ import {
   DropdownMenu, DropdownMenuTrigger,
   DropdownMenuContent, DropdownMenuItem,
 } from '../ds/composites/Dropdown';
+import { ColorPicker } from '../ds/color-picker/ColorPicker';
 import { useA2HS, DEFAULT_A2HS_CONFIG } from '../../hooks/useA2HS';
 import type { A2HSConfig } from '../../hooks/useA2HS';
 import styles from './ConfigDrawer.module.css';
 
 /* Bespoke A2HS config surface bound to the useA2HS bridge, so edits are live in
  * the store preview. Reuses the ConfigDrawer.module.css look and DS atoms. */
-
-const PICKER_COLORS = [
-  '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e',
-  '#06b6d4', '#0ea5e9', '#6366f1', '#6d28d9', '#a855f7',
-  '#111827', '#ffffff',
-];
 
 const FONT_OPTIONS = [
   { label: 'System', value: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" },
@@ -42,10 +37,10 @@ const FIELD_FILL = '#f5f5f5';
 
 /* Section, Framer-style: a plain dark sentence-case headline over its rows,
  * with a hairline separator between sections. */
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({ title, children }: { title?: string; children: ReactNode }) {
   return (
     <div style={sectionWrap}>
-      <div style={sectionTitle}>{title}</div>
+      {title && <div style={sectionTitle}>{title}</div>}
       <div style={sectionBody}>{children}</div>
     </div>
   );
@@ -103,7 +98,7 @@ function ColorField({ label, value, defaultValue, onChange }: {
         <PopoverTrigger asChild>
           <button type="button" style={colorField.wrap} aria-label={`${label}: ${value}`}>
             <span style={{ ...colorField.swatch, background: value }} />
-            <span style={colorField.hex}>{value.replace('#', '').toUpperCase()}</span>
+            <span style={colorField.hex}>{value.startsWith('#') ? value.replace('#', '').toUpperCase() : 'Gradient'}</span>
             {defaultValue && (
               <span
                 role="button"
@@ -116,22 +111,8 @@ function ColorField({ label, value, defaultValue, onChange }: {
             )}
           </button>
         </PopoverTrigger>
-        <PopoverContent side="left" align="start" sideOffset={24} className="w-56">
-          <div className="space-y-3">
-            <p className="text-sm font-medium">Choose a color</p>
-            <div className="grid grid-cols-4 gap-2">
-              {PICKER_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => onChange(c)}
-                  className={`w-full aspect-square rounded-md border-2 transition-colors ${value === c ? 'border-zinc-900' : 'border-[#e5e5e5]'}`}
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-            <p className="text-xs text-gray-500">Selected: {value}</p>
-          </div>
+        <PopoverContent side="left" align="start" sideOffset={24} className="w-64">
+          <ColorPicker value={value} onChange={onChange} />
         </PopoverContent>
       </Popover>
     </div>
@@ -506,6 +487,14 @@ export default function A2HSConfigPanel({ scope = 'all' }: { scope?: 'all' | 'en
     setConfig((c) => ({ ...c, banner: { ...c.banner, ...patch } }));
   const setInstruction = (patch: Partial<A2HSConfig['instruction']>) =>
     setConfig((c) => ({ ...c, instruction: { ...c.instruction, ...patch } }));
+  const setStep = (i: number, patch: Partial<A2HSConfig['instruction']['steps'][number]>) =>
+    setConfig((c) => ({
+      ...c,
+      instruction: {
+        ...c.instruction,
+        steps: c.instruction.steps.map((s, idx) => (idx === i ? { ...s, ...patch } : s)),
+      },
+    }));
   const setCooldown = (patch: Partial<A2HSConfig['dismissalCooldown']>) =>
     setConfig((c) => ({ ...c, dismissalCooldown: { ...c.dismissalCooldown, ...patch } }));
 
@@ -582,61 +571,49 @@ export default function A2HSConfigPanel({ scope = 'all' }: { scope?: 'all' | 'en
 
       {showPopup && (<>
       {/* ── Instruction popup ── */}
-      <Section title="Instruction popup">
-        <Field label="Presentation style" stack>
-          <Segmented
-            value={config.instruction.presentation}
-            options={[{ value: 'drawer', label: 'Drawer' }, { value: 'inline', label: 'Popup' }]}
-            /* Toggling also previews the selected style live in the store. */
-            onChange={(v) => { setInstruction({ presentation: v }); openInstruction(); }}
-          />
-          <p style={helper}>Switching previews the selected style in the store.</p>
+      {/* Presentation picker — its own bordered block, same layout as the
+       * Entry point template tabs. */}
+      <div style={block}>
+        <Segmented
+          value={config.instruction.presentation}
+          options={[{ value: 'drawer', label: 'Drawer' }, { value: 'inline', label: 'Popup' }]}
+          /* Toggling also previews the selected style live in the store. */
+          onChange={(v) => { setInstruction({ presentation: v }); openInstruction(); }}
+        />
+      </div>
+      <Section>
+        <Field label="Title">
+          <Input className={FIELD_INPUT_CLS} value={config.instruction.title} onChange={(e) => setInstruction({ title: e.target.value })} placeholder="Install Store on your Apple Device" />
         </Field>
-        <Field label="Rich text (localized)" stack>
+        <Field label="Description" stack>
           <RichTextField
             value={config.instruction.richText}
             onChange={(v) => setInstruction({ richText: v })}
-            placeholder="Install this store on your device…"
+            placeholder="Stay updated on events and bonuses…"
           />
         </Field>
         <ColorField label="Background color" value={config.instruction.bgColor} defaultValue={DEFAULT_A2HS_CONFIG.instruction.bgColor} onChange={(v) => setInstruction({ bgColor: v })} />
-        <Field label="Background image"><UploadStub /></Field>
-        <OpacityField value={config.instruction.opacity} onChange={(v) => setInstruction({ opacity: v })} />
         <Field label="CTA button text">
           <Input className={FIELD_INPUT_CLS} value={config.instruction.ctaText} onChange={(e) => setInstruction({ ctaText: e.target.value })} />
         </Field>
+
+        <div style={subHeading}>Steps</div>
+        {config.instruction.steps.map((s, i) => (
+          <div key={i} style={stepEditor}>
+            <div style={stepEditorTitle}>Step {i + 1}</div>
+            <Field label="Text">
+              <Input className={FIELD_INPUT_CLS} value={s.text} onChange={(e) => setStep(i, { text: e.target.value })} />
+            </Field>
+            <MediaUploadField label="Image" value={s.image} onChange={(img) => setStep(i, { image: img })} />
+          </div>
+        ))}
+
         <MediaUploadField
           label="Dismiss (✕) icon"
           value={config.instruction.dismissIcon}
           onChange={(img) => setInstruction({ dismissIcon: img })}
           helperText="Replaces the default ✕ close icon."
         />
-      </Section>
-
-      {/* ── Reward ── */}
-      <Section title="Reward popup">
-        {config.reward.configured ? (
-          <button type="button" style={link} onClick={() => { /* would open Popup Offer */ }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <Gift size={14} strokeWidth={2} />
-              Reward popup configured — edit in Popup Offer
-            </span>
-            <ChevronRight size={15} strokeWidth={2} />
-          </button>
-        ) : (
-          <div style={callout}>
-            <AlertCircle size={15} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1, color: '#b45309' }} />
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 12, color: '#92400e' }}>No reward popup configured</div>
-              <p style={{ margin: '2px 0 8px', fontSize: 11.5, lineHeight: 1.4, color: '#a16207' }}>
-                Players won't get an incentive on their first home-screen entry.
-              </p>
-              <button type="button" style={calloutBtn} onClick={() => setConfig((c) => ({ ...c, reward: { configured: true } }))}>
-                Configure a reward
-              </button>
-            </div>
-          </div>
-        )}
       </Section>
 
       {/* ── Completion identity ── */}
@@ -1006,6 +983,22 @@ const fieldControl: CSSProperties = {
   minWidth: 0,
 };
 
+const stepEditor: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+  padding: 10,
+  borderRadius: 10,
+  background: '#fafafa',
+  border: '1px solid var(--color-gray-100, #f3f4f6)',
+};
+
+const stepEditorTitle: CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  color: 'var(--color-foreground)',
+};
+
 const subHeading: CSSProperties = {
   marginTop: 6,
   paddingTop: 12,
@@ -1034,38 +1027,6 @@ const helper: CSSProperties = {
   color: 'var(--color-gray-500)',
 };
 
-const link: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  width: '100%',
-  padding: '10px 12px',
-  borderRadius: 8,
-  background: '#f5f3ff',
-  color: '#5b21b6',
-  fontSize: 12,
-  fontWeight: 600,
-  cursor: 'pointer',
-};
-
-const callout: CSSProperties = {
-  display: 'flex',
-  gap: 8,
-  padding: 12,
-  borderRadius: 10,
-  background: '#fffbeb',
-  border: '1px solid #fde68a',
-};
-
-const calloutBtn: CSSProperties = {
-  padding: '6px 12px',
-  borderRadius: 7,
-  background: '#f59e0b',
-  color: '#fff',
-  fontSize: 12,
-  fontWeight: 700,
-  cursor: 'pointer',
-};
 
 const radio = {
   row: {

@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Shadcn semantic color tokens — required by the vendored color picker
+ * (atom-components' BackgroundPicker) so utilities like text-muted-foreground,
+ * ring-ring, bg-muted, border-input resolve. Values mirror the editor's
+ * existing palette. */
+@theme {
+  --color-background:       #ffffff;
+  --color-foreground:       #18181b;
+  --color-muted:            #f5f5f5;
+  --color-muted-foreground: #71717a;
+  --color-input:            #e4e4e7;
+  --color-ring:             #6366f1;
+  --color-primary:          #4f46e5;
+}
+
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;

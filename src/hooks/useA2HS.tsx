@@ -32,14 +32,21 @@ export interface A2HSBannerConfig {
   dismissIcon?: string; // uploaded image (data URL) replacing the X dismiss icon
 }
 
+export interface A2HSInstructionStep {
+  text: string;
+  image?: string; // uploaded image (data URL) shown as the step card
+}
+
 export interface A2HSInstructionConfig {
   presentation: A2HSPresentation;
-  richText: string;
+  title: string; // drawer headline
+  richText: string; // drawer description
   bgColor: string;
   bgImage?: string;
   opacity: number; // 0–100
   ctaText: string;
   dismissIcon?: string; // uploaded image (data URL) replacing the ✕ close icon
+  steps: A2HSInstructionStep[]; // publisher-editable install steps (text + image)
 }
 
 export interface A2HSConfig {
@@ -83,10 +90,16 @@ export const DEFAULT_A2HS_CONFIG: A2HSConfig = {
   },
   instruction: {
     presentation: 'drawer',
-    richText: 'Install this store on your device for faster access and exclusive rewards.',
+    title: 'Install Store on your Apple Device',
+    richText: 'Stay updated on events and bonuses without missing out',
     bgColor: '#ffffff',
     opacity: 100,
     ctaText: 'Got it',
+    steps: [
+      { text: 'Press "Share" icon in the toolbar' },
+      { text: 'Select "Add to Home Screen" Option' },
+      { text: 'Wait until the app is installed and enjoy quick access to exclusive offers and limited-time deals' },
+    ],
   },
   reward: { configured: true },
   dismissalCooldown: { enabled: false, value: 7, unit: 'days' },
